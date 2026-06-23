@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main id="app"></main>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#beranda">Informatika 3D</a>
+
+        <nav class="nav" aria-label="Navigasi utama">
+          <button class="nav-button is-active" type="button">Beranda</button>
+          <button class="nav-button" type="button">Materi</button>
+          <button class="nav-button" type="button">Viewer 3D</button>
+          <button class="nav-button" type="button">Kuis</button>
+          <button class="nav-button" type="button">Admin</button>
+        </nav>
+      </header>
+
+      <main id="app" class="screen"></main>
+
+      <footer class="footer">
+        SMP Negeri 2 Tasikmalaya | Informatika kelas 7 | Media belajar 3D
+      </footer>
+    </div>
 
     <script src="script.js"></script>
   </body>
