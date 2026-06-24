@@ -1,6 +1,108 @@
+:root {
+  --bg: #f2f7fc;
+  --card: #ffffff;
+  --ink: #141a24;
+  --muted: #636e80;
+  --line: #dbe3ed;
+  --brand: #144fc2;
+  --success: #1fa661;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  background: #dbe3ed;
+  color: var(--ink);
   font-family: Arial, sans-serif;
-  background: #f2f7fc;
-  color: #141a24;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-shell {
+  position: relative;
+  width: min(1440px, 100%);
+  min-height: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--bg);
+  border-radius: 20px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 40px 0;
+}
+
+.brand {
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+  margin-right: 220px;
+}
+
+.nav-button {
+  min-width: 96px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.nav-button.is-active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.screen {
+  min-height: 760px;
+  padding: 58px 54px 92px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 38px;
+  left: 40px;
+  width: min(820px, calc(100% - 80px));
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.intro {
+  margin-top: 40px;
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.35;
+}
+
+.intro p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.35;
 }
