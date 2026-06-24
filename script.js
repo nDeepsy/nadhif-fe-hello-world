@@ -5,6 +5,33 @@ const state = {
   route: "beranda",
 };
 
+const lessons = [
+  {
+    title: "Input",
+    desc: "Perangkat untuk memasukkan data ke komputer.",
+    file: "input.glb",
+    items: ["Keyboard", "Mouse", "Scanner"],
+  },
+  {
+    title: "Proses",
+    desc: "Komponen yang mengolah instruksi dan data.",
+    file: "cpu.glb",
+    items: ["CPU", "RAM", "Motherboard"],
+  },
+  {
+    title: "Output",
+    desc: "Perangkat untuk menampilkan hasil pengolahan.",
+    file: "output.glb",
+    items: ["Monitor", "Printer", "Speaker"],
+  },
+  {
+    title: "Storage",
+    desc: "Media penyimpanan data jangka pendek dan panjang.",
+    file: "storage.glb",
+    items: ["SSD", "Hard disk", "Flash drive"],
+  },
+];
+
 function setRoute(route) {
   state.route = route;
   window.location.hash = route;
@@ -15,6 +42,15 @@ function updateNav() {
   navButtons.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.route === state.route);
   });
+}
+
+function pageHeader(title, subtitle) {
+  return `
+    <div class="page-head">
+      <h1 class="page-title">${title}</h1>
+      <p class="page-subtitle">${subtitle}</p>
+    </div>
+  `;
 }
 
 function renderHome() {
@@ -86,6 +122,65 @@ function renderHome() {
   `;
 }
 
+function renderLessons() {
+  return `
+    ${pageHeader(
+    "Daftar Materi",
+    "Pilih kategori perangkat keras, baca ringkasan, lalu lanjutkan ke viewer 3D."
+  )}
+
+    <div class="search-field">Cari materi, komponen, atau model 3D</div>
+
+    <section class="category-grid">
+      ${lessons
+      .map(
+        (lesson) => `
+            <article class="category-card card">
+              <span class="category-icon">${lesson.title.charAt(0)}</span>
+              <h2>${lesson.title}</h2>
+              <p>${lesson.desc}</p>
+              <button class="btn compact" type="button" data-route-target="viewer">
+                Buka ${lesson.title}
+              </button>
+            </article>
+          `
+      )
+      .join("")}
+    </section>
+
+    <section class="lesson-layout">
+      <div class="card lesson-list">
+        <h2>Materi unggulan</h2>
+
+        ${lessons
+      .slice(0, 3)
+      .map(
+        (lesson) => `
+              <div class="lesson-row">
+                <span></span>
+                <div>
+                  <strong>${lesson.title}</strong>
+                  <p>${lesson.items.join(", ")}</p>
+                </div>
+                <em>${lesson.file}</em>
+              </div>
+            `
+      )
+      .join("")}
+      </div>
+
+      <div class="card learning-path">
+        <h2>Alur belajar</h2>
+        <p>1. Pilih kategori</p>
+        <p>2. Baca ringkasan</p>
+        <p>3. Buka model 3D</p>
+        <p>4. Klik hotspot</p>
+        <p>5. Kerjakan kuis</p>
+      </div>
+    </section>
+  `;
+}
+
 function renderPlaceholder(title, subtitle) {
   return `
     <section class="intro">
@@ -97,11 +192,7 @@ function renderPlaceholder(title, subtitle) {
 
 const routes = {
   beranda: renderHome,
-  materi: () =>
-    renderPlaceholder(
-      "Daftar Materi",
-      "Kategori materi perangkat keras akan ditampilkan di halaman ini."
-    ),
+  materi: renderLessons,
   viewer: () =>
     renderPlaceholder(
       "Viewer 3D Interaktif",
