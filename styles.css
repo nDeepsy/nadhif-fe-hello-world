@@ -428,3 +428,164 @@ button {
   color: var(--muted);
   font-style: normal;
 }
+
+.viewer-layout {
+  display: grid;
+  grid-template-columns: 880px 352px;
+  gap: 46px;
+  margin-top: 34px;
+}
+
+.canvas-3d {
+  position: relative;
+  height: 558px;
+  overflow: hidden;
+}
+
+.computer-model {
+  position: relative;
+  width: 100%;
+  height: 558px;
+}
+
+.viewer-model-body,
+.viewer-model-screen,
+.viewer-model-glow,
+.viewer-model-stand,
+.viewer-model-base {
+  position: absolute;
+  border-radius: 8px;
+}
+
+.viewer-model-body {
+  left: 270px;
+  top: 120px;
+  width: 450px;
+  height: 297px;
+  background: linear-gradient(145deg, #141a24, #253248);
+  box-shadow: 0 28px 50px rgba(20, 26, 36, 0.18);
+}
+
+.viewer-model-screen {
+  left: 302px;
+  top: 152px;
+  width: 386px;
+  height: 218px;
+  background: #163a6e;
+}
+
+.viewer-model-glow {
+  left: 334px;
+  top: 181px;
+  width: 322px;
+  height: 128px;
+  background: linear-gradient(90deg, #1fa661, #2bbcff);
+  opacity: 0.78;
+}
+
+.viewer-model-stand {
+  left: 461px;
+  top: 417px;
+  width: 65px;
+  height: 90px;
+  background: #253248;
+}
+
+.viewer-model-base {
+  left: 395px;
+  top: 494px;
+  width: 200px;
+  height: 35px;
+  background: #141a24;
+}
+
+.viewer-hotspot {
+  position: absolute;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 8px rgba(31, 166, 97, 0.2);
+}
+
+.viewer-hotspot-ram {
+  left: 383px;
+  top: 219px;
+}
+
+.viewer-hotspot-cpu {
+  left: 567px;
+  top: 245px;
+}
+
+.viewer-hotspot-ssd {
+  left: 489px;
+  top: 298px;
+}
+
+.floating-label {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  min-width: 84px;
+  height: 42px;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.label-cpu {
+  top: 176px;
+  left: 602px;
+}
+
+.label-ram {
+  top: 142px;
+  left: 218px;
+}
+
+.label-ssd {
+  top: 258px;
+  left: 414px;
+}
+
+.control-panel {
+  min-height: 558px;
+  padding: 28px;
+}
+
+.control-panel h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.control-button {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.control-panel p {
+  margin: 24px 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.control-panel p strong {
+  color: var(--ink);
+}
+
+.btn.success {
+  border-color: var(--success);
+  background: var(--success);
+  color: #ffffff;
+}

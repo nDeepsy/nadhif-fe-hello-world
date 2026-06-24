@@ -3,6 +3,7 @@ const navButtons = [...document.querySelectorAll("[data-route]")];
 
 const state = {
   route: "beranda",
+  selectedHotspot: "CPU",
 };
 
 const lessons = [
@@ -42,6 +43,22 @@ function updateNav() {
   navButtons.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.route === state.route);
   });
+}
+
+function computerModel() {
+  return `
+    <div class="computer-model" aria-label="Model komputer 3D">
+      <div class="viewer-model-body"></div>
+      <div class="viewer-model-screen"></div>
+      <div class="viewer-model-glow"></div>
+      <div class="viewer-model-stand"></div>
+      <div class="viewer-model-base"></div>
+
+      <button class="viewer-hotspot viewer-hotspot-ram" type="button" data-hotspot="RAM" aria-label="RAM"></button>
+      <button class="viewer-hotspot viewer-hotspot-cpu" type="button" data-hotspot="CPU" aria-label="CPU"></button>
+      <button class="viewer-hotspot viewer-hotspot-ssd" type="button" data-hotspot="SSD" aria-label="SSD"></button>
+    </div>
+  `;
 }
 
 function pageHeader(title, subtitle) {
@@ -181,6 +198,49 @@ function renderLessons() {
   `;
 }
 
+function renderViewer() {
+  const hotspotDetails = {
+    CPU: "CPU berfungsi sebagai pusat pemrosesan instruksi pada komputer.",
+    RAM: "RAM menyimpan data sementara saat aplikasi sedang berjalan.",
+    SSD: "SSD menyimpan data secara permanen dengan akses yang cepat.",
+  };
+
+  return `
+    ${pageHeader(
+    "Viewer 3D Interaktif",
+    "Klik hotspot pada model untuk melihat fungsi komponen."
+  )}
+
+    <section class="viewer-layout">
+      <div class="canvas-3d card">
+        ${computerModel()}
+
+        <div class="floating-label label-cpu">CPU</div>
+        <div class="floating-label label-ram">RAM</div>
+        <div class="floating-label label-ssd">SSD</div>
+      </div>
+
+      <aside class="control-panel card">
+        <h2>Kontrol Model</h2>
+
+        <button class="control-button" type="button">Putar kiri</button>
+        <button class="control-button" type="button">Putar kanan</button>
+        <button class="control-button" type="button">Zoom masuk</button>
+        <button class="control-button" type="button">Zoom keluar</button>
+        <button class="control-button" type="button">Reset posisi</button>
+
+        <p>
+          <strong>${state.selectedHotspot}</strong>: ${hotspotDetails[state.selectedHotspot]}
+        </p>
+
+        <button class="btn success" type="button" data-route-target="kuis">
+          Mulai Kuis
+        </button>
+      </aside>
+    </section>
+  `;
+}
+
 function renderPlaceholder(title, subtitle) {
   return `
     <section class="intro">
@@ -193,11 +253,7 @@ function renderPlaceholder(title, subtitle) {
 const routes = {
   beranda: renderHome,
   materi: renderLessons,
-  viewer: () =>
-    renderPlaceholder(
-      "Viewer 3D Interaktif",
-      "Model komputer 3D dan hotspot komponen akan ditampilkan di halaman ini."
-    ),
+  viewer: renderViewer,
   kuis: () =>
     renderPlaceholder(
       "Kuis Perangkat Keras",
@@ -214,6 +270,13 @@ function bindScreenEvents() {
   app.querySelectorAll("[data-route-target]").forEach((button) => {
     button.addEventListener("click", () => setRoute(button.dataset.routeTarget));
   });
+
+  app.querySelectorAll("[data-hotspot]").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.selectedHotspot = button.dataset.hotspot;
+    render();
+  });
+});
 }
 
 function render() {
