@@ -33,6 +33,42 @@ const lessons = [
   },
 ];
 
+const componentDetails = {
+  CPU: {
+    title: "Detail Komponen CPU",
+    subtitle: "CPU adalah pusat pemrosesan instruksi pada komputer.",
+    visual: "CPU",
+    bullets: [
+      "Mengolah instruksi dari program.",
+      "Mengatur kerja komponen lain.",
+      "Menentukan kecepatan proses komputer.",
+    ],
+    prompt: "CPU bekerja seperti otak komputer yang membaca instruksi, memproses data, lalu mengirim hasilnya ke komponen lain.",
+  },
+  RAM: {
+    title: "Detail Komponen RAM",
+    subtitle: "RAM menyimpan data sementara saat aplikasi sedang berjalan.",
+    visual: "RAM",
+    bullets: [
+      "Menyimpan data sementara.",
+      "Membantu aplikasi berjalan lebih cepat.",
+      "Data akan hilang saat komputer dimatikan.",
+    ],
+    prompt: "RAM digunakan saat komputer sedang aktif menjalankan program, sehingga proses belajar model 3D dapat berjalan lebih lancar.",
+  },
+  SSD: {
+    title: "Detail Komponen SSD",
+    subtitle: "SSD adalah media penyimpanan permanen yang cepat.",
+    visual: "SSD",
+    bullets: [
+      "Menyimpan file dan sistem operasi.",
+      "Akses data lebih cepat dari hard disk.",
+      "Data tetap tersimpan meski komputer dimatikan.",
+    ],
+    prompt: "SSD membuat proses membuka aplikasi, menyimpan data, dan memuat model 3D menjadi lebih cepat.",
+  },
+};
+
 function setRoute(route) {
   state.route = route;
   window.location.hash = route;
@@ -241,6 +277,55 @@ function renderViewer() {
   `;
 }
 
+function renderHotspotDetail() {
+  const detail = componentDetails[state.selectedHotspot] ?? componentDetails.CPU;
+
+  return `
+    ${pageHeader(detail.title, detail.subtitle)}
+
+    <section class="detail-layout">
+      <div class="detail-visual card">
+        <div class="chip-visual">
+          <div class="chip-core">${detail.visual}</div>
+        </div>
+
+        <p>Visual komponen ${detail.visual} pada perangkat keras komputer.</p>
+      </div>
+
+      <div class="detail-content card">
+        <h2>Apa fungsi ${detail.visual}?</h2>
+
+        <div class="detail-bullets">
+          ${detail.bullets
+            .map(
+              (item) => `
+                <div class="detail-bullet">
+                  <span></span>
+                  <p>${item}</p>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+
+        <div class="prompt-box">
+          ${detail.prompt}
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn" type="button" data-route-target="viewer">
+            Kembali ke Viewer
+          </button>
+
+          <button class="btn primary" type="button" data-route-target="kuis">
+            Kerjakan Kuis
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderPlaceholder(title, subtitle) {
   return `
     <section class="intro">
@@ -254,6 +339,7 @@ const routes = {
   beranda: renderHome,
   materi: renderLessons,
   viewer: renderViewer,
+  detail: renderHotspotDetail,
   kuis: () =>
     renderPlaceholder(
       "Kuis Perangkat Keras",
@@ -274,7 +360,7 @@ function bindScreenEvents() {
   app.querySelectorAll("[data-hotspot]").forEach((button) => {
   button.addEventListener("click", () => {
     state.selectedHotspot = button.dataset.hotspot;
-    render();
+    setRoute("detail");
   });
 });
 }
