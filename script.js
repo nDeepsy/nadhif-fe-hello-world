@@ -4,6 +4,10 @@ const navButtons = [...document.querySelectorAll("[data-route]")];
 const state = {
   route: "beranda",
   selectedHotspot: "CPU",
+  studentName: "",
+  currentQuestion: 0,
+  selectedAnswer: null,
+  answers: [],
 };
 
 const lessons = [
@@ -68,6 +72,34 @@ const componentDetails = {
     prompt: "SSD membuat proses membuka aplikasi, menyimpan data, dan memuat model 3D menjadi lebih cepat.",
   },
 };
+
+const quizQuestions = [
+  {
+    question: "Komponen apa yang berfungsi sebagai pusat pemrosesan instruksi pada komputer?",
+    answers: ["Monitor", "Keyboard", "CPU", "Printer"],
+    correct: 2,
+  },
+  {
+    question: "Perangkat apa yang digunakan untuk menyimpan data secara permanen?",
+    answers: ["RAM", "SSD", "Monitor", "Mouse"],
+    correct: 1,
+  },
+  {
+    question: "RAM termasuk komponen yang membantu komputer dalam hal apa?",
+    answers: ["Memori sementara", "Cetak dokumen", "Tampilan layar", "Input suara"],
+    correct: 0,
+  },
+  {
+    question: "Format file yang umum dipakai untuk model 3D di web adalah...",
+    answers: ["DOCX", "GLB", "XLSX", "MP3"],
+    correct: 1,
+  },
+  {
+    question: "API yang mengirim data berbentuk JSON biasanya digunakan untuk...",
+    answers: ["Menghubungkan aplikasi dengan server", "Menghapus monitor", "Memperbesar layar", "Mengganti kabel listrik"],
+    correct: 0,
+  },
+];
 
 function setRoute(route) {
   state.route = route;
@@ -326,6 +358,72 @@ function renderHotspotDetail() {
   `;
 }
 
+function renderQuiz() {
+  const question = quizQuestions[state.currentQuestion];
+  const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
+
+  return `
+    ${pageHeader(
+      "Kuis Perangkat Keras",
+      "Isi nama dulu. Skor masuk leaderboard permanen setelah selesai."
+    )}
+
+    <section class="quiz-name card">
+      <label for="studentName">Nama siswa</label>
+      <input
+        id="studentName"
+        type="text"
+        value="${state.studentName}"
+        placeholder="Masukkan nama kamu"
+        autocomplete="name"
+      />
+      <strong>Leaderboard permanen</strong>
+    </section>
+
+    <section class="quiz-layout">
+      <div class="question-card card">
+        <p class="progress-label">Soal ${state.currentQuestion + 1} dari ${quizQuestions.length}</p>
+
+        <div class="progress-track">
+          <span style="width: ${progressWidth}%"></span>
+        </div>
+
+        <h2>${question.question}</h2>
+
+        <div class="answer-list">
+          ${question.answers
+            .map(
+              (answer, index) => `
+                <button
+                  class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""}"
+                  type="button"
+                  data-answer="${index}"
+                >
+                  ${String.fromCharCode(65 + index)}. ${answer}
+                </button>
+              `
+            )
+            .join("")}
+        </div>
+
+        <button class="btn success next-button" type="button" data-next-question>
+          ${state.currentQuestion === quizQuestions.length - 1 ? "Selesai" : "Lanjutkan"}
+        </button>
+      </div>
+
+      <aside class="score-side card">
+        <h2>Status kuis</h2>
+        <strong class="score-number">0</strong>
+        <span>poin sementara</span>
+
+        <p><b>Nama:</b> ${state.studentName || "belum diisi"}</p>
+        <p>${state.selectedAnswer === null ? "Pilih salah satu jawaban" : "Jawaban sudah tersimpan"}</p>
+        <p>Benar/salah tidak tampil di tombol</p>
+      </aside>
+    </section>
+  `;
+}
+
 function renderPlaceholder(title, subtitle) {
   return `
     <section class="intro">
@@ -340,11 +438,7 @@ const routes = {
   materi: renderLessons,
   viewer: renderViewer,
   detail: renderHotspotDetail,
-  kuis: () =>
-    renderPlaceholder(
-      "Kuis Perangkat Keras",
-      "Input nama, soal, skor, dan leaderboard permanen akan ditampilkan di halaman ini."
-    ),
+  kuis: renderQuiz,
   admin: () =>
     renderPlaceholder(
       "Dashboard Guru Admin",
@@ -363,6 +457,36 @@ function bindScreenEvents() {
     setRoute("detail");
   });
 });
+
+const nameInput = app.querySelector("#studentName");
+
+if (nameInput) {
+  nameInput.addEventListener("input", (event) => {
+    state.studentName = event.target.value;
+  });
+}
+
+app.querySelectorAll("[data-answer]").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.selectedAnswer = Number(button.dataset.answer);
+    state.answers[state.currentQuestion] = state.selectedAnswer;
+    render();
+  });
+});
+
+const nextButton = app.querySelector("[data-next-question]");
+
+if (nextButton) {
+  nextButton.addEventListener("click", () => {
+    if (state.selectedAnswer === null) return;
+
+    if (state.currentQuestion < quizQuestions.length - 1) {
+      state.currentQuestion += 1;
+      state.selectedAnswer = state.answers[state.currentQuestion] ?? null;
+      render();
+    }
+  });
+}
 }
 
 function render() {
