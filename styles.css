@@ -811,3 +811,82 @@ button {
   margin: 26px 0 0;
   line-height: 1.35;
 }
+
+.result-layout {
+  display: grid;
+  grid-template-columns: 520px 600px;
+  gap: 54px;
+  margin-top: 40px;
+  margin-left: 32px;
+}
+
+.result-summary {
+  min-height: 410px;
+  padding: 54px 64px;
+  text-align: center;
+}
+
+.result-summary > strong {
+  color: var(--success);
+}
+
+.badge-circle {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 10px auto 10px;
+  border-radius: 50%;
+  background: #ffe3c2;
+}
+
+.badge-circle span {
+  position: absolute;
+  inset: 38px;
+  border-radius: 50%;
+  background: #fb9828;
+}
+
+.result-summary h2 {
+  margin: 0 0 32px;
+  font-size: 30px;
+  line-height: 1.35;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.leaderboard {
+  min-height: 410px;
+  padding: 28px;
+}
+
+.leaderboard h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px;
+  align-items: center;
+  height: 52px;
+  margin-top: 14px;
+  padding: 0 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.leaderboard-row.soft {
+  background: #f2f7fc;
+}
+
+.leaderboard-row b {
+  color: var(--brand);
+}
+
+.leaderboard-row span {
+  color: var(--muted);
+}

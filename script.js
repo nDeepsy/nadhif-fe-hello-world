@@ -8,6 +8,7 @@ const state = {
   currentQuestion: 0,
   selectedAnswer: null,
   answers: [],
+  lastResult: null,
 };
 
 const lessons = [
@@ -366,6 +367,73 @@ function calculateScore(answers) {
   return correctAnswers.length * 20;
 }
 
+function normalizeName(value) {
+  const cleanName = String(value || "").trim().replace(/\s+/g, " ");
+
+  if (!cleanName) {
+    return "Siswa Tanpa Nama";
+  }
+
+  return cleanName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function getLeaderboard() {
+  const savedData = localStorage.getItem("informatika3d.leaderboard");
+
+  if (!savedData) {
+    return [];
+  }
+
+  return JSON.parse(savedData).sort((a, b) => b.score - a.score).slice(0, 10);
+}
+
+function savePermanentScore(result) {
+  const leaderboard = getLeaderboard();
+  const studentName = normalizeName(result.name);
+
+  const existingIndex = leaderboard.findIndex(
+    (entry) => entry.name.toLowerCase() === studentName.toLowerCase()
+  );
+
+  const newEntry = {
+    name: studentName,
+    score: result.score,
+    total: result.total,
+    savedAt: new Date().toISOString(),
+  };
+
+  if (existingIndex >= 0) {
+    if (newEntry.score >= leaderboard[existingIndex].score) {
+      leaderboard[existingIndex] = newEntry;
+    }
+  } else {
+    leaderboard.push(newEntry);
+  }
+
+  localStorage.setItem(
+    "informatika3d.leaderboard",
+    JSON.stringify(leaderboard.sort((a, b) => b.score - a.score).slice(0, 10))
+  );
+}
+
+function finishQuiz() {
+  const score = calculateScore(state.answers);
+  const name = normalizeName(state.studentName);
+
+  state.lastResult = {
+    name,
+    score,
+    total: 100,
+    answers: [...state.answers],
+  };
+
+  savePermanentScore(state.lastResult);
+  setRoute("hasil");
+}
+
 function renderQuiz() {
   const question = quizQuestions[state.currentQuestion];
   const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
@@ -432,6 +500,72 @@ function renderQuiz() {
   `;
 }
 
+function renderResults() {
+  const result = state.lastResult || {
+    name: "Dimas Saputra",
+    score: 80,
+    total: 100,
+  };
+
+  const leaderboard = getLeaderboard();
+
+  const rows =
+    leaderboard.length > 0
+      ? leaderboard
+      : [
+          { name: "Dimas Saputra", score: 80 },
+          { name: "Siti Nurhaliza", score: 70 },
+          { name: "Rizky Pratama", score: 60 },
+          { name: "Aulia Rahman", score: 50 },
+        ];
+
+  return `
+    ${pageHeader(
+      "Hasil Kuis & Leaderboard",
+      "Skor siswa tersimpan permanen dan masuk daftar peringkat kelas."
+    )}
+
+    <section class="result-layout">
+      <div class="result-summary card">
+        <strong>Tersimpan permanen</strong>
+
+        <div class="badge-circle">
+          <span></span>
+        </div>
+
+        <h2>${result.name}<br />Skor ${result.score}/${result.total}</h2>
+
+        <div class="result-actions">
+          <button class="btn primary" type="button" data-restart-quiz>
+            Ulangi Kuis
+          </button>
+
+          <button class="btn" type="button" data-route-target="materi">
+            Kembali Materi
+          </button>
+        </div>
+      </div>
+
+      <div class="leaderboard card">
+        <h2>Leaderboard Permanen</h2>
+
+        ${rows
+          .slice(0, 4)
+          .map(
+            (entry, index) => `
+              <div class="leaderboard-row ${index % 2 === 0 ? "soft" : ""}">
+                <b>#${index + 1}</b>
+                <strong>${entry.name}</strong>
+                <span>${entry.score} poin</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
 function renderPlaceholder(title, subtitle) {
   return `
     <section class="intro">
@@ -447,6 +581,7 @@ const routes = {
   viewer: renderViewer,
   detail: renderHotspotDetail,
   kuis: renderQuiz,
+  hasil: renderResults,
   admin: () =>
     renderPlaceholder(
       "Dashboard Guru Admin",
@@ -488,11 +623,24 @@ if (nextButton) {
   nextButton.addEventListener("click", () => {
     if (state.selectedAnswer === null) return;
 
-    if (state.currentQuestion < quizQuestions.length - 1) {
-      state.currentQuestion += 1;
-      state.selectedAnswer = state.answers[state.currentQuestion] ?? null;
-      render();
+    if (state.currentQuestion === quizQuestions.length - 1) {
+      finishQuiz();
+      return;
     }
+
+    state.currentQuestion += 1;
+    state.selectedAnswer = state.answers[state.currentQuestion] ?? null;
+    render();
+  });
+}
+const restartButton = app.querySelector("[data-restart-quiz]");
+
+if (restartButton) {
+  restartButton.addEventListener("click", () => {
+    state.currentQuestion = 0;
+    state.selectedAnswer = null;
+    state.answers = [];
+    setRoute("kuis");
   });
 }
 }
