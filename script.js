@@ -358,6 +358,14 @@ function renderHotspotDetail() {
   `;
 }
 
+function calculateScore(answers) {
+  const correctAnswers = answers.filter((answer, index) => {
+    return quizQuestions[index]?.correct === answer;
+  });
+
+  return correctAnswers.length * 20;
+}
+
 function renderQuiz() {
   const question = quizQuestions[state.currentQuestion];
   const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
@@ -413,7 +421,7 @@ function renderQuiz() {
 
       <aside class="score-side card">
         <h2>Status kuis</h2>
-        <strong class="score-number">0</strong>
+        <strong class="score-number">${calculateScore(state.answers)}</strong>
         <span>poin sementara</span>
 
         <p><b>Nama:</b> ${state.studentName || "belum diisi"}</p>
