@@ -1173,3 +1173,14 @@ button {
   font-size: 13px;
   font-weight: 700;
 }
+
+.btn.danger {
+  border-color: #c2410c;
+  background: #c2410c;
+  color: #ffffff;
+}
+
+.admin-reset {
+  width: 100%;
+  margin-top: 12px;
+}

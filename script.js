@@ -647,7 +647,11 @@ function renderAdmin() {
             <p><strong>GET /model/cpu</strong><br /><span>2 menit lalu</span></p>
             <p><strong>POST /quiz</strong><br /><span>4 menit lalu</span></p>
             <p><strong>GET /leaderboard</strong><br /><span>5 menit lalu</span></p>
-          </div>
+
+            <button class="btn danger admin-reset" type="button" data-reset-leaderboard>
+               Reset Leaderboard
+            </button>
+         </div>
         </section>
       </div>
     </section>
@@ -726,6 +730,16 @@ function bindScreenEvents() {
       state.selectedAnswer = null;
       state.answers = [];
       setRoute("kuis");
+    });
+  }
+
+  const resetLeaderboardButton = app.querySelector("[data-reset-leaderboard]");
+
+  if (resetLeaderboardButton) {
+    resetLeaderboardButton.addEventListener("click", () => {
+      localStorage.removeItem("informatika3d.leaderboard");
+      state.lastResult = null;
+      render();
     });
   }
 }
