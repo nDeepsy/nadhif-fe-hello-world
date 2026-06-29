@@ -18,7 +18,8 @@ body {
   min-height: 100vh;
   background: #dbe3ed;
   color: var(--ink);
-  font-family: Arial, sans-serif;
+  font-family: "Inter", Arial, sans-serif;
+  letter-spacing: 0;
 }
 
 button {
@@ -1001,4 +1002,165 @@ button {
 
 .logs span {
   color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px 24px 0;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-right: 0;
+  }
+
+  .nav-button {
+    min-width: 0;
+    width: auto;
+    padding: 0 14px;
+  }
+
+  .screen {
+    padding: 42px 24px 112px;
+  }
+
+  .footer {
+    left: 24px;
+    width: calc(100% - 48px);
+  }
+
+  .home-grid,
+  .category-grid,
+  .lesson-layout,
+  .viewer-layout,
+  .detail-layout,
+  .quiz-layout,
+  .result-layout,
+  .admin-layout,
+  .admin-content,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    font-size: 42px;
+  }
+
+  .hero-preview,
+  .canvas-3d,
+  .computer-model {
+    min-height: 420px;
+    height: 420px;
+  }
+
+  .feature-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-field {
+    position: static;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .category-grid,
+  .feature-row,
+  .stats-grid {
+    gap: 18px;
+  }
+
+  .quiz-name {
+    width: 100%;
+    height: auto;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px 20px;
+  }
+
+  .quiz-name strong {
+    text-align: left;
+  }
+
+  .question-card h2,
+  .answer-list {
+    width: 100%;
+  }
+
+  .next-button {
+    position: static;
+    width: 100%;
+    margin-top: 18px;
+  }
+
+  .result-layout,
+  .detail-layout {
+    margin-left: 0;
+  }
+
+  .admin-layout {
+    margin: -42px -24px -112px;
+  }
+
+  .admin-main {
+    padding: 36px 24px 120px;
+  }
+
+  .admin-sidebar {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-title,
+  .intro h1 {
+    font-size: 32px;
+  }
+
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .hero-text {
+    font-size: 18px;
+  }
+
+  .feature-row {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card h2,
+  .category-card p {
+    margin-left: 0;
+  }
+
+  .category-icon {
+    margin-bottom: 14px;
+  }
+
+  .lesson-row,
+  .leaderboard-row,
+  .admin-row {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 6px;
+    padding: 14px 18px;
+  }
+
+  .result-actions,
+  .detail-actions,
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
