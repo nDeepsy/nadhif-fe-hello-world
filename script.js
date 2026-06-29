@@ -330,15 +330,15 @@ function renderHotspotDetail() {
 
         <div class="detail-bullets">
           ${detail.bullets
-            .map(
-              (item) => `
+      .map(
+        (item) => `
                 <div class="detail-bullet">
                   <span></span>
                   <p>${item}</p>
                 </div>
               `
-            )
-            .join("")}
+      )
+      .join("")}
         </div>
 
         <div class="prompt-box">
@@ -440,9 +440,9 @@ function renderQuiz() {
 
   return `
     ${pageHeader(
-      "Kuis Perangkat Keras",
-      "Isi nama dulu. Skor masuk leaderboard permanen setelah selesai."
-    )}
+    "Kuis Perangkat Keras",
+    "Isi nama dulu. Skor masuk leaderboard permanen setelah selesai."
+  )}
 
     <section class="quiz-name card">
       <label for="studentName">Nama siswa</label>
@@ -468,8 +468,8 @@ function renderQuiz() {
 
         <div class="answer-list">
           ${question.answers
-            .map(
-              (answer, index) => `
+      .map(
+        (answer, index) => `
                 <button
                   class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""}"
                   type="button"
@@ -478,8 +478,8 @@ function renderQuiz() {
                   ${String.fromCharCode(65 + index)}. ${answer}
                 </button>
               `
-            )
-            .join("")}
+      )
+      .join("")}
         </div>
 
         <button class="btn success next-button" type="button" data-next-question>
@@ -513,17 +513,17 @@ function renderResults() {
     leaderboard.length > 0
       ? leaderboard
       : [
-          { name: "Dimas Saputra", score: 80 },
-          { name: "Siti Nurhaliza", score: 70 },
-          { name: "Rizky Pratama", score: 60 },
-          { name: "Aulia Rahman", score: 50 },
-        ];
+        { name: "Dimas Saputra", score: 80 },
+        { name: "Siti Nurhaliza", score: 70 },
+        { name: "Rizky Pratama", score: 60 },
+        { name: "Aulia Rahman", score: 50 },
+      ];
 
   return `
     ${pageHeader(
-      "Hasil Kuis & Leaderboard",
-      "Skor siswa tersimpan permanen dan masuk daftar peringkat kelas."
-    )}
+    "Hasil Kuis & Leaderboard",
+    "Skor siswa tersimpan permanen dan masuk daftar peringkat kelas."
+  )}
 
     <section class="result-layout">
       <div class="result-summary card">
@@ -550,17 +550,95 @@ function renderResults() {
         <h2>Leaderboard Permanen</h2>
 
         ${rows
-          .slice(0, 4)
-          .map(
-            (entry, index) => `
+      .slice(0, 4)
+      .map(
+        (entry, index) => `
               <div class="leaderboard-row ${index % 2 === 0 ? "soft" : ""}">
                 <b>#${index + 1}</b>
                 <strong>${entry.name}</strong>
                 <span>${entry.score} poin</span>
               </div>
             `
-          )
-          .join("")}
+      )
+      .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderAdmin() {
+  const leaderboard = getLeaderboard();
+
+  return `
+    <section class="admin-layout">
+      <aside class="admin-sidebar">
+        <h2>Admin<br />Informatika</h2>
+
+        <button type="button">Materi 3D</button>
+        <button type="button">Kategori</button>
+        <button type="button">Soal Kuis</button>
+        <button type="button">API Logs</button>
+        <button type="button">Pengguna</button>
+      </aside>
+
+      <div class="admin-main">
+        ${pageHeader(
+          "Dashboard Guru Admin",
+          "Kelola materi, soal kuis, dan pantau skor siswa."
+        )}
+
+        <section class="stats-grid">
+          <article class="stat-card card">
+            <span></span>
+            <p>Materi aktif</p>
+            <strong>12</strong>
+          </article>
+
+          <article class="stat-card card">
+            <span></span>
+            <p>Kategori</p>
+            <strong>4</strong>
+          </article>
+
+          <article class="stat-card card">
+            <span></span>
+            <p>Soal kuis</p>
+            <strong>${quizQuestions.length}</strong>
+          </article>
+
+          <article class="stat-card card">
+            <span></span>
+            <p>Skor tersimpan</p>
+            <strong>${leaderboard.length}</strong>
+          </article>
+        </section>
+
+        <section class="admin-content">
+          <div class="admin-table card">
+            <h2>Materi table</h2>
+
+            ${lessons
+              .map(
+                (lesson) => `
+                  <div class="admin-row">
+                    <span>${lesson.title}</span>
+                    <span>${lesson.file}</span>
+                    <span>Aktif</span>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+
+          <div class="logs card">
+            <h2>API logs</h2>
+
+            <p><strong>GET /materi</strong><br /><span>1 menit lalu</span></p>
+            <p><strong>GET /model/cpu</strong><br /><span>2 menit lalu</span></p>
+            <p><strong>POST /quiz</strong><br /><span>4 menit lalu</span></p>
+            <p><strong>GET /leaderboard</strong><br /><span>5 menit lalu</span></p>
+          </div>
+        </section>
       </div>
     </section>
   `;
@@ -582,11 +660,7 @@ const routes = {
   detail: renderHotspotDetail,
   kuis: renderQuiz,
   hasil: renderResults,
-  admin: () =>
-    renderPlaceholder(
-      "Dashboard Guru Admin",
-      "Panel guru untuk mengelola materi, soal kuis, dan data siswa."
-    ),
+  admin: renderAdmin,
 };
 
 function bindScreenEvents() {
@@ -595,54 +669,54 @@ function bindScreenEvents() {
   });
 
   app.querySelectorAll("[data-hotspot]").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.selectedHotspot = button.dataset.hotspot;
-    setRoute("detail");
+    button.addEventListener("click", () => {
+      state.selectedHotspot = button.dataset.hotspot;
+      setRoute("detail");
+    });
   });
-});
 
-const nameInput = app.querySelector("#studentName");
+  const nameInput = app.querySelector("#studentName");
 
-if (nameInput) {
-  nameInput.addEventListener("input", (event) => {
-    state.studentName = event.target.value;
+  if (nameInput) {
+    nameInput.addEventListener("input", (event) => {
+      state.studentName = event.target.value;
+    });
+  }
+
+  app.querySelectorAll("[data-answer]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedAnswer = Number(button.dataset.answer);
+      state.answers[state.currentQuestion] = state.selectedAnswer;
+      render();
+    });
   });
-}
 
-app.querySelectorAll("[data-answer]").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.selectedAnswer = Number(button.dataset.answer);
-    state.answers[state.currentQuestion] = state.selectedAnswer;
-    render();
-  });
-});
+  const nextButton = app.querySelector("[data-next-question]");
 
-const nextButton = app.querySelector("[data-next-question]");
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      if (state.selectedAnswer === null) return;
 
-if (nextButton) {
-  nextButton.addEventListener("click", () => {
-    if (state.selectedAnswer === null) return;
+      if (state.currentQuestion === quizQuestions.length - 1) {
+        finishQuiz();
+        return;
+      }
 
-    if (state.currentQuestion === quizQuestions.length - 1) {
-      finishQuiz();
-      return;
-    }
+      state.currentQuestion += 1;
+      state.selectedAnswer = state.answers[state.currentQuestion] ?? null;
+      render();
+    });
+  }
+  const restartButton = app.querySelector("[data-restart-quiz]");
 
-    state.currentQuestion += 1;
-    state.selectedAnswer = state.answers[state.currentQuestion] ?? null;
-    render();
-  });
-}
-const restartButton = app.querySelector("[data-restart-quiz]");
-
-if (restartButton) {
-  restartButton.addEventListener("click", () => {
-    state.currentQuestion = 0;
-    state.selectedAnswer = null;
-    state.answers = [];
-    setRoute("kuis");
-  });
-}
+  if (restartButton) {
+    restartButton.addEventListener("click", () => {
+      state.currentQuestion = 0;
+      state.selectedAnswer = null;
+      state.answers = [];
+      setRoute("kuis");
+    });
+  }
 }
 
 function render() {

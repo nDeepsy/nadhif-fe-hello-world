@@ -890,3 +890,115 @@ button {
 .leaderboard-row span {
   color: var(--muted);
 }
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 900px;
+  margin: -58px -54px -92px;
+}
+
+.admin-sidebar {
+  padding: 30px 28px;
+  background: #141a24;
+  color: #ffffff;
+}
+
+.admin-sidebar h2 {
+  margin: 0 0 28px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.admin-sidebar button {
+  display: block;
+  width: 190px;
+  height: 42px;
+  margin-bottom: 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.admin-main {
+  padding: 54px 50px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 210px);
+  gap: 32px;
+  margin-top: 34px;
+}
+
+.stat-card {
+  min-height: 126px;
+  padding: 26px 22px;
+}
+
+.stat-card span {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e6f3ee;
+}
+
+.stat-card p {
+  margin: -42px 0 0 60px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.stat-card strong {
+  display: block;
+  margin-left: 60px;
+  font-size: 38px;
+}
+
+.admin-content {
+  display: grid;
+  grid-template-columns: 640px 330px;
+  gap: 38px;
+  margin-top: 44px;
+}
+
+.admin-table,
+.logs {
+  padding: 28px;
+}
+
+.admin-table h2,
+.logs h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px;
+  min-height: 56px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  background: #f7fbff;
+  color: var(--muted);
+}
+
+.admin-row span:first-child {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.logs p {
+  margin: 0 0 18px;
+  line-height: 1.35;
+}
+
+.logs span {
+  color: var(--muted);
+}
