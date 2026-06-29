@@ -760,4 +760,10 @@ if (routes[initialRoute]) {
   state.route = initialRoute;
 }
 
+window.Informatika3D = {
+  normalizeName,
+  getLeaderboard,
+  savePermanentScore,
+};
+
 render();
