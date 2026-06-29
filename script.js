@@ -5,11 +5,12 @@ const state = {
   route: "beranda",
   selectedHotspot: "CPU",
   studentName: "",
+  nameWarning: "",
   currentQuestion: 0,
   selectedAnswer: null,
   answers: [],
   lastResult: null,
-};
+};;
 
 const lessons = [
   {
@@ -420,6 +421,12 @@ function savePermanentScore(result) {
 }
 
 function finishQuiz() {
+  if (!state.studentName.trim()) {
+    state.nameWarning = "Nama harus diisi sebelum skor disimpan.";
+    setRoute("kuis");
+    return;
+  }
+
   const score = calculateScore(state.answers);
   const name = normalizeName(state.studentName);
 
@@ -447,12 +454,15 @@ function renderQuiz() {
     <section class="quiz-name card">
       <label for="studentName">Nama siswa</label>
       <input
-        id="studentName"
-        type="text"
-        value="${state.studentName}"
-        placeholder="Masukkan nama kamu"
-        autocomplete="name"
-      />
+       id="studentName"
+       type="text"
+       value="${state.studentName}"
+       placeholder="Masukkan nama kamu"
+      autocomplete="name"
+     />
+    <small class="name-warning">
+    ${state.nameWarning || ""}
+    </small>
       <strong>Leaderboard permanen</strong>
     </section>
 
@@ -583,9 +593,9 @@ function renderAdmin() {
 
       <div class="admin-main">
         ${pageHeader(
-          "Dashboard Guru Admin",
-          "Kelola materi, soal kuis, dan pantau skor siswa."
-        )}
+    "Dashboard Guru Admin",
+    "Kelola materi, soal kuis, dan pantau skor siswa."
+  )}
 
         <section class="stats-grid">
           <article class="stat-card card">
@@ -618,16 +628,16 @@ function renderAdmin() {
             <h2>Materi table</h2>
 
             ${lessons
-              .map(
-                (lesson) => `
+      .map(
+        (lesson) => `
                   <div class="admin-row">
                     <span>${lesson.title}</span>
                     <span>${lesson.file}</span>
                     <span>Aktif</span>
                   </div>
                 `
-              )
-              .join("")}
+      )
+      .join("")}
           </div>
 
           <div class="logs card">
@@ -680,6 +690,7 @@ function bindScreenEvents() {
   if (nameInput) {
     nameInput.addEventListener("input", (event) => {
       state.studentName = event.target.value;
+      state.nameWarning = "";
     });
   }
 
