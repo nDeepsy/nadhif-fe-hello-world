@@ -360,6 +360,15 @@ function renderHotspotDetail() {
   `;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function calculateScore(answers) {
   const correctAnswers = answers.filter((answer, index) => {
     return quizQuestions[index]?.correct === answer;
@@ -382,13 +391,20 @@ function normalizeName(value) {
 }
 
 function getLeaderboard() {
-  const savedData = localStorage.getItem("informatika3d.leaderboard");
+  try {
+    const savedData = localStorage.getItem("informatika3d.leaderboard");
 
-  if (!savedData) {
+    if (!savedData) {
+      return [];
+    }
+
+    return JSON.parse(savedData)
+      .filter((entry) => entry && entry.name && Number.isFinite(entry.score))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+  } catch {
     return [];
   }
-
-  return JSON.parse(savedData).sort((a, b) => b.score - a.score).slice(0, 10);
 }
 
 function savePermanentScore(result) {
@@ -456,12 +472,12 @@ function renderQuiz() {
       <input
        id="studentName"
        type="text"
-       value="${state.studentName}"
+       value="${escapeHtml(state.studentName)}"
        placeholder="Masukkan nama kamu"
       autocomplete="name"
      />
     <small class="name-warning">
-    ${state.nameWarning || ""}
+    ${escapeHtml(state.nameWarning || "")}
     </small>
       <strong>Leaderboard permanen</strong>
     </section>
@@ -502,7 +518,7 @@ function renderQuiz() {
         <strong class="score-number">${calculateScore(state.answers)}</strong>
         <span>poin sementara</span>
 
-        <p><b>Nama:</b> ${state.studentName || "belum diisi"}</p>
+        <p><b>Nama:</b> ${escapeHtml(state.studentName || "belum diisi")}</p>
         <p>${state.selectedAnswer === null ? "Pilih salah satu jawaban" : "Jawaban sudah tersimpan"}</p>
         <p>Benar/salah tidak tampil di tombol</p>
       </aside>
@@ -543,7 +559,7 @@ function renderResults() {
           <span></span>
         </div>
 
-        <h2>${result.name}<br />Skor ${result.score}/${result.total}</h2>
+        <h2>${escapeHtml(result.name)}<br />Skor ${result.score}/${result.total}</h2>
 
         <div class="result-actions">
           <button class="btn primary" type="button" data-restart-quiz>
@@ -565,7 +581,7 @@ function renderResults() {
         (entry, index) => `
               <div class="leaderboard-row ${index % 2 === 0 ? "soft" : ""}">
                 <b>#${index + 1}</b>
-                <strong>${entry.name}</strong>
+                <strong>${escapeHtml(entry.name)}</strong>
                 <span>${entry.score} poin</span>
               </div>
             `
