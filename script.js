@@ -1,6 +1,12 @@
 const app = document.querySelector("#app");
 const navButtons = [...document.querySelectorAll("[data-route]")];
 
+//API Backend Config
+// Base URL backend Express.
+// Backend harus dijalankan di http://localhost:3000
+// Semua request API frontend dimulai dari URL ini.
+const API_BASE_URL = "http://localhost:3000/api";
+
 const state = {
   route: "beranda",
   selectedHotspot: "CPU",
@@ -10,9 +16,11 @@ const state = {
   selectedAnswer: null,
   answers: [],
   lastResult: null,
+  apiReady: false,
+  apiMessage: "Menghubungkan ke API...",
 };;
 
-const lessons = [
+let lessons = [
   {
     title: "Input",
     desc: "Perangkat untuk memasukkan data ke komputer.",
@@ -75,7 +83,7 @@ const componentDetails = {
   },
 };
 
-const quizQuestions = [
+let quizQuestions = [
   {
     question: "Komponen apa yang berfungsi sebagai pusat pemrosesan instruksi pada komputer?",
     answers: ["Monitor", "Keyboard", "CPU", "Printer"],
@@ -142,6 +150,9 @@ function pageHeader(title, subtitle) {
 
 function renderHome() {
   return `
+    <div class="api-status ${state.apiReady ? "is-online" : "is-offline"}">
+       ${state.apiMessage}
+    </div>
     <section class="home-grid">
       <div class="hero-copy">
         <p class="eyebrow">Media Pembelajaran Interaktif 3D</p>
@@ -360,6 +371,51 @@ function renderHotspotDetail() {
   `;
 }
 
+// API Helper
+// Function utama untuk melakukan request ke REST API backend.
+// Endpoint yang dipanggil akan digabung dengan API_BASE_URL.
+// Contoh: fetchJson("/materi") -> http://localhost:3000/api/materi
+async function fetchJson(endpoint, options) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+  if (!response.ok) {
+    throw new Error(`API error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// API Get Materi & Quiz
+// Mengambil data materi dan soal kuis dari backend.
+// Endpoint:
+// GET /api/materi
+// GET /api/quiz
+// Jika backend tidak aktif, frontend memakai data fallback lokal.
+async function loadInitialData() {
+  try {
+    const [materiData, quizData] = await Promise.all([
+      fetchJson("/materi"),
+      fetchJson("/quiz"),
+    ]);
+
+    if (Array.isArray(materiData) && materiData.length > 0) {
+      lessons = materiData;
+    }
+
+    if (Array.isArray(quizData) && quizData.length > 0) {
+      quizQuestions = quizData;
+    }
+
+    state.apiReady = true;
+    state.apiMessage = "Data berhasil dimuat dari API backend.";
+  } catch (error) {
+    state.apiReady = false;
+    state.apiMessage = "API backend tidak aktif. Data fallback lokal digunakan.";
+  }
+
+  render();
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -392,19 +448,45 @@ function normalizeName(value) {
 
 function getLeaderboard() {
   try {
-    const savedData = localStorage.getItem("informatika3d.leaderboard");
-
-    if (!savedData) {
-      return [];
-    }
-
-    return JSON.parse(savedData)
+    return JSON.parse(localStorage.getItem("informatika3d.leaderboard") || "[]")
       .filter((entry) => entry && entry.name && Number.isFinite(entry.score))
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
   } catch {
     return [];
   }
+}
+
+// API Get leaderboard
+// Mengambil data leaderboard dari backend.
+// Endpoint:
+// GET /api/leaderboard
+async function getLeaderboardFromApi() {
+  return fetchJson("/leaderboard");
+}
+
+// API Post Leaderboard
+// Mengirim skor siswa ke backend agar tersimpan di leaderboard.
+async function saveScoreToApi(result) {
+  return fetchJson("/leaderboard", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: result.name,
+      score: result.score,
+      total: result.total,
+    }),
+  });
+}
+
+// API Delete Leaderboard
+// Menghapus semua data leaderboard melalui backend.
+async function resetLeaderboardApi() {
+  return fetchJson("/leaderboard", {
+    method: "DELETE",
+  });
 }
 
 function savePermanentScore(result) {
@@ -436,7 +518,7 @@ function savePermanentScore(result) {
   );
 }
 
-function finishQuiz() {
+async function finishQuiz() {
   if (!state.studentName.trim()) {
     state.nameWarning = "Nama harus diisi sebelum skor disimpan.";
     setRoute("kuis");
@@ -454,6 +536,15 @@ function finishQuiz() {
   };
 
   savePermanentScore(state.lastResult);
+
+  try {
+    // API POST: kirim hasil kuis ke backend leaderboard.
+    await saveScoreToApi(state.lastResult);
+    state.apiMessage = "Skor berhasil dikirim ke API backend.";
+  } catch {
+    state.apiMessage = "Skor tersimpan lokal. API backend tidak aktif.";
+  }
+
   setRoute("hasil");
 }
 
@@ -755,7 +846,16 @@ function bindScreenEvents() {
     resetLeaderboardButton.addEventListener("click", () => {
       localStorage.removeItem("informatika3d.leaderboard");
       state.lastResult = null;
-      render();
+      // API DELETE: reset leaderboard di backend melalui tombol admin.
+      resetLeaderboardApi()
+        .then(() => {
+          state.apiMessage = "Leaderboard backend berhasil direset.";
+          render();
+        })
+        .catch(() => {
+          state.apiMessage = "Leaderboard lokal direset. API backend tidak aktif.";
+          render();
+        });
     });
   }
 }
@@ -783,3 +883,5 @@ window.Informatika3D = {
 };
 
 render();
+// API INIT: setelah UI pertama tampil, frontend mengambil data dari backend.
+loadInitialData();
