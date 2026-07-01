@@ -18,7 +18,13 @@ const state = {
   lastResult: null,
   apiReady: false,
   apiMessage: "Menghubungkan ke API...",
-};;
+  apiLeaderboard: [],
+  lessonSearch: "",
+  selectedLesson: "Proses",
+  viewerRotation: 0,
+  viewerZoom: 1,
+  adminTab: "materi",
+};
 
 let lessons = [
   {
@@ -123,6 +129,39 @@ function updateNav() {
   });
 }
 
+function filterLessons(sourceLessons, query) {
+  const keyword = String(query || "").trim().toLowerCase();
+
+  if (!keyword) {
+    return sourceLessons;
+  }
+
+  return sourceLessons.filter((lesson) => {
+    const searchableText = [
+      lesson.title,
+      lesson.desc,
+      lesson.file,
+      ...(lesson.items || []),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(keyword);
+  });
+}
+
+function getViewerTransform({ rotation, zoom }) {
+  return `rotateY(${rotation}deg) scale(${zoom})`;
+}
+
+function getLessonHotspot(title) {
+  const lessonTitle = String(title || "").toLowerCase();
+
+  if (lessonTitle.includes("storage")) return "SSD";
+  if (lessonTitle.includes("input")) return "RAM";
+  return "CPU";
+}
+
 function computerModel() {
   return `
     <div class="computer-model" aria-label="Model komputer 3D">
@@ -221,36 +260,46 @@ function renderHome() {
 }
 
 function renderLessons() {
+  const visibleLessons = filterLessons(lessons, state.lessonSearch);
+
   return `
     ${pageHeader(
     "Daftar Materi",
     "Pilih kategori perangkat keras, baca ringkasan, lalu lanjutkan ke viewer 3D."
   )}
 
-    <div class="search-field">Cari materi, komponen, atau model 3D</div>
+    <label class="search-field">
+      <span>Cari materi, komponen, atau model 3D</span>
+      <input type="search" value="${escapeHtml(state.lessonSearch)}" data-search-lessons />
+    </label>
 
     <section class="category-grid">
-      ${lessons
+      ${visibleLessons.length > 0 ? visibleLessons
       .map(
         (lesson) => `
             <article class="category-card card">
               <span class="category-icon">${lesson.title.charAt(0)}</span>
               <h2>${lesson.title}</h2>
               <p>${lesson.desc}</p>
-              <button class="btn compact" type="button" data-route-target="viewer">
+              <button class="btn compact" type="button" data-open-lesson="${lesson.title}">
                 Buka ${lesson.title}
               </button>
             </article>
           `
       )
-      .join("")}
+      .join("") : `
+        <article class="category-empty card">
+          <h2>Materi tidak ditemukan</h2>
+          <p>Coba cari dengan kata CPU, RAM, SSD, input, output, atau storage.</p>
+        </article>
+      `}
     </section>
 
     <section class="lesson-layout">
       <div class="card lesson-list">
         <h2>Materi unggulan</h2>
 
-        ${lessons
+        ${visibleLessons
       .slice(0, 3)
       .map(
         (lesson) => `
@@ -285,16 +334,19 @@ function renderViewer() {
     RAM: "RAM menyimpan data sementara saat aplikasi sedang berjalan.",
     SSD: "SSD menyimpan data secara permanen dengan akses yang cepat.",
   };
+  const selectedLesson = lessons.find((lesson) => lesson.title === state.selectedLesson) ?? lessons[1] ?? lessons[0];
 
   return `
     ${pageHeader(
     "Viewer 3D Interaktif",
-    "Klik hotspot pada model untuk melihat fungsi komponen."
+    `Materi aktif: ${selectedLesson?.title ?? "Proses"}. Klik hotspot pada model untuk melihat fungsi komponen.`
   )}
 
     <section class="viewer-layout">
       <div class="canvas-3d card">
-        ${computerModel()}
+        <div class="viewer-stage" style="transform: ${getViewerTransform({ rotation: state.viewerRotation, zoom: state.viewerZoom })}">
+          ${computerModel()}
+        </div>
 
         <div class="floating-label label-cpu">CPU</div>
         <div class="floating-label label-ram">RAM</div>
@@ -304,15 +356,16 @@ function renderViewer() {
       <aside class="control-panel card">
         <h2>Kontrol Model</h2>
 
-        <button class="control-button" type="button">Putar kiri</button>
-        <button class="control-button" type="button">Putar kanan</button>
-        <button class="control-button" type="button">Zoom masuk</button>
-        <button class="control-button" type="button">Zoom keluar</button>
-        <button class="control-button" type="button">Reset posisi</button>
+        <button class="control-button" type="button" data-viewer-control="rotate-left">Putar kiri</button>
+        <button class="control-button" type="button" data-viewer-control="rotate-right">Putar kanan</button>
+        <button class="control-button" type="button" data-viewer-control="zoom-in">Zoom masuk</button>
+        <button class="control-button" type="button" data-viewer-control="zoom-out">Zoom keluar</button>
+        <button class="control-button" type="button" data-viewer-control="reset">Reset posisi</button>
 
         <p>
           <strong>${state.selectedHotspot}</strong>: ${hotspotDetails[state.selectedHotspot]}
         </p>
+        <p class="viewer-state">Rotasi ${state.viewerRotation} derajat | Zoom ${Math.round(state.viewerZoom * 100)}%</p>
 
         <button class="btn success" type="button" data-route-target="kuis">
           Mulai Kuis
@@ -685,17 +738,116 @@ function renderResults() {
 
 function renderAdmin() {
   const leaderboard = getLeaderboard();
+  const tabs = [
+    ["materi", "Materi 3D"],
+    ["kategori", "Kategori"],
+    ["soal", "Soal Kuis"],
+    ["logs", "API Logs"],
+    ["pengguna", "Pengguna"],
+  ];
+  const adminPanels = {
+    materi: `
+      <div class="admin-table card">
+        <h2>Materi table</h2>
+        ${lessons
+          .map(
+            (lesson) => `
+              <div class="admin-row">
+                <span>${lesson.title}</span>
+                <span>${lesson.file}</span>
+                <span>Aktif</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `,
+    kategori: `
+      <div class="admin-table card">
+        <h2>Kategori Materi</h2>
+        ${lessons
+          .map(
+            (lesson) => `
+              <div class="admin-row">
+                <span>${lesson.title}</span>
+                <span>${lesson.items.length} komponen</span>
+                <span>Aktif</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `,
+    soal: `
+      <div class="admin-table card">
+        <h2>Bank Soal Kuis</h2>
+        ${quizQuestions
+          .map(
+            (question, index) => `
+              <div class="admin-row question-admin-row">
+                <span>Soal ${index + 1}</span>
+                <span>${question.question}</span>
+                <span>${question.answers[question.correct]}</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `,
+    logs: `
+      <div class="logs card">
+        <h2>API logs</h2>
+        <p><strong>GET /materi</strong><br /><span>Data materi dari backend</span></p>
+        <p><strong>GET /quiz</strong><br /><span>Data soal dari backend</span></p>
+        <p><strong>POST /leaderboard</strong><br /><span>Simpan skor siswa</span></p>
+        <p><strong>DELETE /leaderboard</strong><br /><span>Reset leaderboard</span></p>
+        <button class="btn danger admin-reset" type="button" data-reset-leaderboard>
+          Reset Leaderboard
+        </button>
+      </div>
+    `,
+    pengguna: `
+      <div class="admin-table card">
+        <h2>Pengguna & Skor</h2>
+        ${
+          leaderboard.length > 0
+            ? leaderboard
+                .map(
+                  (entry, index) => `
+                    <div class="admin-row">
+                      <span>#${index + 1}</span>
+                      <span>${escapeHtml(entry.name)}</span>
+                      <span>${entry.score}</span>
+                    </div>
+                  `
+                )
+                .join("")
+            : `
+              <div class="admin-row">
+                <span>Belum ada data</span>
+                <span>Kerjakan kuis dulu</span>
+                <span>0</span>
+              </div>
+            `
+        }
+      </div>
+    `,
+  };
 
   return `
     <section class="admin-layout">
       <aside class="admin-sidebar">
         <h2>Admin<br />Informatika</h2>
 
-        <button type="button">Materi 3D</button>
-        <button type="button">Kategori</button>
-        <button type="button">Soal Kuis</button>
-        <button type="button">API Logs</button>
-        <button type="button">Pengguna</button>
+        ${tabs
+          .map(
+            ([tab, label]) => `
+              <button class="${state.adminTab === tab ? "is-active" : ""}" type="button" data-admin-tab="${tab}">
+                ${label}
+              </button>
+            `
+          )
+          .join("")}
       </aside>
 
       <div class="admin-main">
@@ -731,34 +883,7 @@ function renderAdmin() {
         </section>
 
         <section class="admin-content">
-          <div class="admin-table card">
-            <h2>Materi table</h2>
-
-            ${lessons
-      .map(
-        (lesson) => `
-                  <div class="admin-row">
-                    <span>${lesson.title}</span>
-                    <span>${lesson.file}</span>
-                    <span>Aktif</span>
-                  </div>
-                `
-      )
-      .join("")}
-          </div>
-
-          <div class="logs card">
-            <h2>API logs</h2>
-
-            <p><strong>GET /materi</strong><br /><span>1 menit lalu</span></p>
-            <p><strong>GET /model/cpu</strong><br /><span>2 menit lalu</span></p>
-            <p><strong>POST /quiz</strong><br /><span>4 menit lalu</span></p>
-            <p><strong>GET /leaderboard</strong><br /><span>5 menit lalu</span></p>
-
-            <button class="btn danger admin-reset" type="button" data-reset-leaderboard>
-               Reset Leaderboard
-            </button>
-         </div>
+          ${adminPanels[state.adminTab] ?? adminPanels.materi}
         </section>
       </div>
     </section>
@@ -789,10 +914,63 @@ function bindScreenEvents() {
     button.addEventListener("click", () => setRoute(button.dataset.routeTarget));
   });
 
+  const lessonSearch = app.querySelector("[data-search-lessons]");
+
+  if (lessonSearch) {
+    lessonSearch.addEventListener("input", (event) => {
+      state.lessonSearch = event.target.value;
+      render();
+    });
+  }
+
+  app.querySelectorAll("[data-open-lesson]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedLesson = button.dataset.openLesson;
+      state.selectedHotspot = getLessonHotspot(state.selectedLesson);
+      setRoute("viewer");
+    });
+  });
+
   app.querySelectorAll("[data-hotspot]").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedHotspot = button.dataset.hotspot;
       setRoute("detail");
+    });
+  });
+
+  app.querySelectorAll("[data-viewer-control]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.viewerControl;
+
+      if (action === "rotate-left") {
+        state.viewerRotation -= 15;
+      }
+
+      if (action === "rotate-right") {
+        state.viewerRotation += 15;
+      }
+
+      if (action === "zoom-in") {
+        state.viewerZoom = Math.min(1.4, Number((state.viewerZoom + 0.1).toFixed(1)));
+      }
+
+      if (action === "zoom-out") {
+        state.viewerZoom = Math.max(0.8, Number((state.viewerZoom - 0.1).toFixed(1)));
+      }
+
+      if (action === "reset") {
+        state.viewerRotation = 0;
+        state.viewerZoom = 1;
+      }
+
+      render();
+    });
+  });
+
+  app.querySelectorAll("[data-admin-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.adminTab = button.dataset.adminTab;
+      render();
     });
   });
 
@@ -880,6 +1058,8 @@ window.Informatika3D = {
   normalizeName,
   getLeaderboard,
   savePermanentScore,
+  filterLessons,
+  getViewerTransform,
 };
 
 render();

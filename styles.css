@@ -347,6 +347,27 @@ button {
   padding: 15px 22px;
 }
 
+.search-field span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.search-field input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.search-field input::placeholder {
+  color: var(--muted);
+}
+
 .category-grid {
   display: grid;
   grid-template-columns: repeat(4, 304px);
@@ -357,6 +378,22 @@ button {
 .category-card {
   min-height: 174px;
   padding: 24px;
+}
+
+.category-empty {
+  grid-column: 1 / -1;
+  min-height: 174px;
+  padding: 34px;
+}
+
+.category-empty h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.category-empty p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .category-icon {
@@ -447,6 +484,13 @@ button {
   position: relative;
   width: 100%;
   height: 558px;
+}
+
+.viewer-stage {
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  transition: transform 180ms ease;
 }
 
 .viewer-model-body,
@@ -583,6 +627,10 @@ button {
 
 .control-panel p strong {
   color: var(--ink);
+}
+
+.viewer-state {
+  font-size: 14px;
 }
 
 .btn.success {
@@ -923,6 +971,10 @@ button {
   font-weight: 800;
 }
 
+.admin-sidebar button.is-active {
+  background: var(--brand);
+}
+
 .admin-main {
   padding: 54px 50px;
 }
@@ -962,7 +1014,7 @@ button {
 
 .admin-content {
   display: grid;
-  grid-template-columns: 640px 330px;
+  grid-template-columns: minmax(640px, 1fr);
   gap: 38px;
   margin-top: 44px;
 }
@@ -993,6 +1045,10 @@ button {
 .admin-row span:first-child {
   color: var(--ink);
   font-weight: 800;
+}
+
+.question-admin-row {
+  grid-template-columns: 90px 1fr 140px;
 }
 
 .logs p {

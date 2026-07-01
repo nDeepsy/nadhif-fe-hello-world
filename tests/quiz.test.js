@@ -77,4 +77,17 @@ assert.strictEqual(
   JSON.stringify(["Dimas Saputra:90", "Siti Nurhaliza:70"])
 );
 
+const filteredLessons = api.filterLessons(
+  [
+    { title: "Input", desc: "Keyboard dan mouse", items: ["Keyboard"] },
+    { title: "Storage", desc: "SSD dan hard disk", items: ["SSD"] },
+  ],
+  "ssd"
+);
+
+assert.strictEqual(filteredLessons.length, 1);
+assert.strictEqual(filteredLessons[0].title, "Storage");
+
+assert.strictEqual(api.getViewerTransform({ rotation: -15, zoom: 1.2 }), "rotateY(-15deg) scale(1.2)");
+
 console.log("quiz tests passed");
