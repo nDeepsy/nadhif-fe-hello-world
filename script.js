@@ -1156,13 +1156,11 @@ function renderResults() {
   return `
     ${pageHeader(
     "Hasil Kuis & Leaderboard",
-    "Skor siswa tersimpan permanen dan masuk daftar peringkat kelas."
+    "Lihat nilai akhir, peringkat kelas, dan review jawaban."
   )}
 
     <section class="result-layout">
       <div class="result-summary card">
-        <strong>Tersimpan permanen</strong>
-
         <div class="badge-circle">
           <span></span>
         </div>
