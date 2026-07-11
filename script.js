@@ -481,7 +481,7 @@ function renderHome() {
           shadow-intensity="1"
           exposure="0.9"
         >
-          <div class="model-loading-card">
+          <div class="model-loading-card" slot="poster">
             <strong>Model 3D perangkat komputer</strong>
             <span>Motherboard, CPU, RAM, dan slot komponen.</span>
           </div>
@@ -622,7 +622,7 @@ function renderViewer() {
               <strong>Memuat model 3D...</strong>
               <span>${escapeHtml(selectedLesson?.file || "model.glb")}</span>
             </div>
-            <div class="model-loading-card">
+            <div class="model-loading-card" slot="poster">
               <strong>${escapeHtml(selectedLesson?.title || "Model 3D")}</strong>
               <span>${escapeHtml(selectedLesson?.file || "model.glb")}</span>
             </div>
@@ -681,7 +681,7 @@ function renderHotspotDetail() {
           shadow-intensity="1"
           exposure="0.9"
         >
-          <div class="model-loading-card">
+          <div class="model-loading-card" slot="poster">
             <strong>${escapeHtml(detail.visual)}</strong>
             <span>Model 3D komponen komputer.</span>
           </div>
