@@ -90,4 +90,54 @@ assert.strictEqual(filteredLessons[0].title, "Storage");
 
 assert.strictEqual(api.getViewerTransform({ rotation: -15, zoom: 1.2 }), "rotateY(-15deg) scale(1.2)");
 
+assert.strictEqual(
+  api.getLessonModelUrl({ modelUrl: "/uploads/models/cpu.glb", file: "cpu.glb" }),
+  "http://localhost:3000/uploads/models/cpu.glb"
+);
+
+assert.strictEqual(
+  api.getLessonModelUrl({ file: "cpu.glb" }),
+  "http://localhost:3000/uploads/models/cpu.glb"
+);
+
+assert.strictEqual(
+  JSON.stringify(api.parseItemsInput("CPU, RAM, SSD")),
+  JSON.stringify(["CPU", "RAM", "SSD"])
+);
+
+assert.strictEqual(
+  JSON.stringify(api.normalizeLessonPayload({
+    title: " Proses ",
+    desc: " Komponen proses ",
+    file: "cpu.glb",
+    modelUrl: "/uploads/models/cpu.glb",
+    items: "CPU, RAM",
+  })),
+  JSON.stringify({
+    title: "Proses",
+    desc: "Komponen proses",
+    file: "cpu.glb",
+    modelUrl: "/uploads/models/cpu.glb",
+    items: ["CPU", "RAM"],
+  })
+);
+
+assert.strictEqual(
+  JSON.stringify(api.normalizeQuizPayload({
+    question: " Apa fungsi CPU? ",
+    answers: "Monitor, CPU, Printer",
+    correct: "1",
+  })),
+  JSON.stringify({
+    question: "Apa fungsi CPU?",
+    answers: ["Monitor", "CPU", "Printer"],
+    correct: 1,
+  })
+);
+
+assert.strictEqual(
+  api.getComponentModelUrl("Motherboard"),
+  "http://localhost:3000/uploads/models/cpu.glb"
+);
+
 console.log("quiz tests passed");

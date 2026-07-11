@@ -195,6 +195,12 @@ button {
   height: 390px;
 }
 
+.hero-model-viewer {
+  width: 100%;
+  height: 390px;
+  background: #eef5fd;
+}
+
 .model-body,
 .model-screen,
 .model-glow,
@@ -480,6 +486,32 @@ button {
   overflow: hidden;
 }
 
+.model-viewer {
+  width: 100%;
+  height: 100%;
+  min-height: 558px;
+  background: #eef5fd;
+}
+
+.viewer-fallback {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  padding: 28px;
+  background: #eef5fd;
+  color: var(--muted);
+  text-align: center;
+}
+
+.viewer-fallback strong {
+  color: var(--ink);
+  font-size: 24px;
+}
+
 .computer-model {
   position: relative;
   width: 100%;
@@ -629,8 +661,44 @@ button {
   color: var(--ink);
 }
 
+.viewer-meta {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: #f7fbff;
+}
+
+.viewer-meta strong {
+  font-size: 22px;
+}
+
+.viewer-meta span {
+  color: var(--muted);
+  word-break: break-word;
+}
+
 .viewer-state {
   font-size: 14px;
+}
+
+.component-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.tag-button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  background: #ffffff;
+  color: var(--brand);
+  font-weight: 800;
 }
 
 .btn.success {
@@ -649,8 +717,15 @@ button {
 
 .detail-visual {
   min-height: 460px;
-  padding: 56px;
+  padding: 28px;
   text-align: center;
+}
+
+.detail-model-viewer {
+  width: 100%;
+  height: 330px;
+  border-radius: var(--radius);
+  background: #eef5fd;
 }
 
 .chip-visual {
@@ -1019,6 +1094,89 @@ button {
   margin-top: 44px;
 }
 
+.admin-form {
+  padding: 28px;
+}
+
+.admin-form-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.admin-form-head h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.admin-form-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-form-grid label {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.admin-form-grid label.wide {
+  grid-column: 1 / -1;
+}
+
+.admin-form-grid input,
+.admin-form-grid textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+}
+
+.admin-form-grid textarea {
+  resize: vertical;
+}
+
+.admin-upload input {
+  background: #f7fbff;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.admin-message {
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-weight: 800;
+}
+
+.admin-message.success {
+  background: #e6f3ee;
+  color: var(--success);
+}
+
+.admin-message.error {
+  background: #fff3e8;
+  color: #c2410c;
+}
+
 .admin-table,
 .logs {
   padding: 28px;
@@ -1049,6 +1207,36 @@ button {
 
 .question-admin-row {
   grid-template-columns: 90px 1fr 140px;
+}
+
+.materi-admin-row {
+  grid-template-columns: 1fr 140px 1fr 150px;
+  gap: 12px;
+}
+
+.quiz-admin-row {
+  grid-template-columns: 82px 1fr 150px 150px;
+  gap: 12px;
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-row-actions button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.admin-row-actions button:last-child {
+  border-color: #f3c9b9;
+  color: #c2410c;
 }
 
 .logs p {
@@ -1112,7 +1300,8 @@ button {
 
   .hero-preview,
   .canvas-3d,
-  .computer-model {
+  .computer-model,
+  .model-viewer {
     min-height: 420px;
     height: 420px;
   }
@@ -1172,6 +1361,17 @@ button {
   .admin-sidebar {
     min-height: auto;
   }
+
+  .admin-form-head,
+  .admin-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .materi-admin-row,
+  .quiz-admin-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1218,6 +1418,14 @@ button {
 
   .btn {
     width: 100%;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-row-actions {
+    flex-direction: column;
   }
 }
 

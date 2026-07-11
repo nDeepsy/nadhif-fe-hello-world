@@ -24,6 +24,24 @@ const state = {
   viewerRotation: 0,
   viewerZoom: 1,
   adminTab: "materi",
+  adminEditingId: null,
+  adminMessage: "",
+  adminError: "",
+  adminForm: {
+    title: "",
+    desc: "",
+    file: "",
+    modelUrl: "",
+    items: "",
+  },
+  adminQuizEditingId: null,
+  adminQuizMessage: "",
+  adminQuizError: "",
+  adminQuizForm: {
+    question: "",
+    answers: "",
+    correct: "0",
+  },
 };
 
 let lessons = [
@@ -31,24 +49,28 @@ let lessons = [
     title: "Input",
     desc: "Perangkat untuk memasukkan data ke komputer.",
     file: "input.glb",
+    modelUrl: "/uploads/models/input.glb",
     items: ["Keyboard", "Mouse", "Scanner"],
   },
   {
     title: "Proses",
     desc: "Komponen yang mengolah instruksi dan data.",
     file: "cpu.glb",
+    modelUrl: "/uploads/models/cpu.glb",
     items: ["CPU", "RAM", "Motherboard"],
   },
   {
     title: "Output",
     desc: "Perangkat untuk menampilkan hasil pengolahan.",
     file: "output.glb",
+    modelUrl: "/uploads/models/output.glb",
     items: ["Monitor", "Printer", "Speaker"],
   },
   {
     title: "Storage",
     desc: "Media penyimpanan data jangka pendek dan panjang.",
     file: "storage.glb",
+    modelUrl: "/uploads/models/storage.glb",
     items: ["SSD", "Hard disk", "Flash drive"],
   },
 ];
@@ -87,6 +109,94 @@ const componentDetails = {
     ],
     prompt: "SSD membuat proses membuka aplikasi, menyimpan data, dan memuat model 3D menjadi lebih cepat.",
   },
+  MOTHERBOARD: {
+    title: "Detail Komponen Motherboard",
+    subtitle: "Motherboard menghubungkan CPU, RAM, storage, dan perangkat lain.",
+    visual: "Motherboard",
+    bullets: [
+      "Menjadi papan utama tempat komponen dipasang.",
+      "Mengatur jalur komunikasi antar perangkat keras.",
+      "Memiliki socket CPU, slot RAM, dan konektor storage.",
+    ],
+    prompt: "Motherboard seperti jalan utama di dalam komputer: semua komponen saling terhubung melalui papan ini.",
+  },
+  KEYBOARD: {
+    title: "Detail Perangkat Keyboard",
+    subtitle: "Keyboard digunakan untuk memasukkan huruf, angka, dan perintah.",
+    visual: "Keyboard",
+    bullets: [
+      "Memasukkan teks ke komputer.",
+      "Memakai tombol shortcut untuk perintah cepat.",
+      "Termasuk perangkat input.",
+    ],
+    prompt: "Keyboard membantu pengguna memberi instruksi tertulis kepada komputer.",
+  },
+  MOUSE: {
+    title: "Detail Perangkat Mouse",
+    subtitle: "Mouse digunakan untuk menggerakkan pointer dan memilih objek.",
+    visual: "Mouse",
+    bullets: [
+      "Menggerakkan kursor di layar.",
+      "Memilih menu, tombol, dan ikon.",
+      "Termasuk perangkat input.",
+    ],
+    prompt: "Mouse memudahkan pengguna berinteraksi dengan tampilan grafis komputer.",
+  },
+  MONITOR: {
+    title: "Detail Perangkat Monitor",
+    subtitle: "Monitor menampilkan hasil proses komputer dalam bentuk visual.",
+    visual: "Monitor",
+    bullets: [
+      "Menampilkan teks, gambar, dan video.",
+      "Membantu pengguna melihat hasil kerja komputer.",
+      "Termasuk perangkat output.",
+    ],
+    prompt: "Monitor adalah layar utama untuk melihat informasi yang diproses komputer.",
+  },
+  PRINTER: {
+    title: "Detail Perangkat Printer",
+    subtitle: "Printer mencetak dokumen digital ke media kertas.",
+    visual: "Printer",
+    bullets: [
+      "Mencetak teks dan gambar.",
+      "Mengubah dokumen digital menjadi fisik.",
+      "Termasuk perangkat output.",
+    ],
+    prompt: "Printer digunakan ketika hasil kerja komputer perlu dicetak.",
+  },
+  SPEAKER: {
+    title: "Detail Perangkat Speaker",
+    subtitle: "Speaker mengeluarkan suara dari komputer.",
+    visual: "Speaker",
+    bullets: [
+      "Menghasilkan audio.",
+      "Dipakai untuk musik, video, dan notifikasi.",
+      "Termasuk perangkat output.",
+    ],
+    prompt: "Speaker membuat komputer dapat menyampaikan informasi dalam bentuk suara.",
+  },
+  "HARD DISK": {
+    title: "Detail Komponen Hard Disk",
+    subtitle: "Hard disk menyimpan data secara permanen.",
+    visual: "Hard Disk",
+    bullets: [
+      "Menyimpan sistem operasi dan file.",
+      "Kapasitasnya biasanya besar.",
+      "Data tetap tersimpan saat komputer mati.",
+    ],
+    prompt: "Hard disk adalah media penyimpanan jangka panjang pada komputer.",
+  },
+  "FLASH DRIVE": {
+    title: "Detail Perangkat Flash Drive",
+    subtitle: "Flash drive adalah penyimpanan portabel yang mudah dipindahkan.",
+    visual: "Flash Drive",
+    bullets: [
+      "Menyimpan dan memindahkan file.",
+      "Berukuran kecil dan mudah dibawa.",
+      "Menggunakan koneksi USB.",
+    ],
+    prompt: "Flash drive membantu memindahkan data dari satu komputer ke komputer lain.",
+  },
 };
 
 let quizQuestions = [
@@ -123,6 +233,15 @@ function setRoute(route) {
   render();
 }
 
+function syncRouteFromHash() {
+  const routeFromHash = window.location.hash.replace("#", "");
+
+  if (routes[routeFromHash] && state.route !== routeFromHash) {
+    state.route = routeFromHash;
+    render();
+  }
+}
+
 function updateNav() {
   navButtons.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.route === state.route);
@@ -150,6 +269,131 @@ function filterLessons(sourceLessons, query) {
   });
 }
 
+function parseItemsInput(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeLessonPayload(payload) {
+  return {
+    title: String(payload?.title || "").trim(),
+    desc: String(payload?.desc || "").trim(),
+    file: String(payload?.file || "").trim(),
+    modelUrl: String(payload?.modelUrl || "").trim(),
+    items: parseItemsInput(payload?.items),
+  };
+}
+
+function normalizeQuizPayload(payload) {
+  return {
+    question: String(payload?.question || "").trim(),
+    answers: parseItemsInput(payload?.answers),
+    correct: Number(payload?.correct),
+  };
+}
+
+function getLessonModelUrl(lesson) {
+  const source = String(lesson?.modelUrl || lesson?.file || "").trim();
+
+  if (!source) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(source)) {
+    return source;
+  }
+
+  if (source.startsWith("/")) {
+    return `${API_BASE_URL.replace("/api", "")}${source}`;
+  }
+
+  return `${API_BASE_URL.replace("/api", "")}/uploads/models/${source}`;
+}
+
+function getComponentModelUrl(component) {
+  const key = String(component || "").toUpperCase();
+
+  if (["CPU", "RAM", "MOTHERBOARD"].includes(key)) {
+    return getLessonModelUrl({ file: "cpu.glb" });
+  }
+
+  if (["KEYBOARD", "MOUSE", "SCANNER"].includes(key)) {
+    return getLessonModelUrl({ file: "input.glb" });
+  }
+
+  if (["MONITOR", "PRINTER", "SPEAKER"].includes(key)) {
+    return getLessonModelUrl({ file: "output.glb" });
+  }
+
+  if (["SSD", "HARD DISK", "FLASH DRIVE"].includes(key)) {
+    return getLessonModelUrl({ file: "storage.glb" });
+  }
+
+  return getLessonModelUrl({ file: "cpu.glb" });
+}
+
+function getEmptyAdminForm() {
+  return {
+    title: "",
+    desc: "",
+    file: "",
+    modelUrl: "",
+    items: "",
+  };
+}
+
+function setAdminFormFromLesson(lesson) {
+  state.adminEditingId = lesson.id ?? lesson.title;
+  state.adminForm = {
+    title: lesson.title || "",
+    desc: lesson.desc || "",
+    file: lesson.file || "",
+    modelUrl: lesson.modelUrl || "",
+    items: (lesson.items || []).join(", "),
+  };
+  state.adminMessage = `Mode edit materi ${lesson.title}.`;
+  state.adminError = "";
+}
+
+function clearAdminForm() {
+  state.adminEditingId = null;
+  state.adminForm = getEmptyAdminForm();
+  state.adminMessage = "";
+  state.adminError = "";
+}
+
+function getEmptyAdminQuizForm() {
+  return {
+    question: "",
+    answers: "",
+    correct: "0",
+  };
+}
+
+function setAdminQuizFormFromQuestion(question) {
+  state.adminQuizEditingId = question.id ?? "";
+  state.adminQuizForm = {
+    question: question.question || "",
+    answers: (question.answers || []).join(", "),
+    correct: String(question.correct ?? 0),
+  };
+  state.adminQuizMessage = `Mode edit soal ${question.id ?? ""}.`;
+  state.adminQuizError = "";
+}
+
+function clearAdminQuizForm() {
+  state.adminQuizEditingId = null;
+  state.adminQuizForm = getEmptyAdminQuizForm();
+  state.adminQuizMessage = "";
+  state.adminQuizError = "";
+}
+
 function getViewerTransform({ rotation, zoom }) {
   return `rotateY(${rotation}deg) scale(${zoom})`;
 }
@@ -160,6 +404,22 @@ function getLessonHotspot(title) {
   if (lessonTitle.includes("storage")) return "SSD";
   if (lessonTitle.includes("input")) return "RAM";
   return "CPU";
+}
+
+function getComponentHotspot(item) {
+  const component = String(item || "").toUpperCase();
+
+  if (componentDetails[component]) {
+    return component;
+  }
+
+  return getLessonHotspot(item);
+}
+
+function getSelectedLesson() {
+  return lessons.find((lesson) => {
+    return String(lesson.id) === String(state.selectedLesson) || lesson.title === state.selectedLesson;
+  }) ?? lessons[1] ?? lessons[0];
 }
 
 function computerModel() {
@@ -188,6 +448,8 @@ function pageHeader(title, subtitle) {
 }
 
 function renderHome() {
+  const heroModelUrl = getLessonModelUrl({ file: "cpu.glb" });
+
   return `
     <div class="api-status ${state.apiReady ? "is-online" : "is-offline"}">
        ${state.apiMessage}
@@ -214,19 +476,17 @@ function renderHome() {
           <span></span>
         </div>
 
-        <div class="model-preview">
-          <div class="model-body"></div>
-          <div class="model-screen"></div>
-          <div class="model-glow"></div>
-          <div class="model-stand"></div>
-          <div class="model-base"></div>
-          <span class="hotspot hotspot-ram"></span>
-          <span class="hotspot hotspot-cpu"></span>
-          <span class="hotspot hotspot-ssd"></span>
-        </div>
+        <model-viewer
+          class="hero-model-viewer"
+          src="${escapeHtml(heroModelUrl)}"
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          exposure="0.9"
+        ></model-viewer>
 
         <p class="preview-caption">
-          Sentuh hotspot CPU, RAM, atau SSD untuk melihat penjelasan komponen.
+          Model 3D motherboard, CPU, RAM, dan komponen komputer dapat diputar langsung.
         </p>
       </div>
     </section>
@@ -334,7 +594,9 @@ function renderViewer() {
     RAM: "RAM menyimpan data sementara saat aplikasi sedang berjalan.",
     SSD: "SSD menyimpan data secara permanen dengan akses yang cepat.",
   };
-  const selectedLesson = lessons.find((lesson) => lesson.title === state.selectedLesson) ?? lessons[1] ?? lessons[0];
+  const selectedLesson = getSelectedLesson();
+  const modelUrl = getLessonModelUrl(selectedLesson);
+  const lessonItems = selectedLesson?.items || [];
 
   return `
     ${pageHeader(
@@ -344,28 +606,49 @@ function renderViewer() {
 
     <section class="viewer-layout">
       <div class="canvas-3d card">
-        <div class="viewer-stage" style="transform: ${getViewerTransform({ rotation: state.viewerRotation, zoom: state.viewerZoom })}">
-          ${computerModel()}
-        </div>
-
-        <div class="floating-label label-cpu">CPU</div>
-        <div class="floating-label label-ram">RAM</div>
-        <div class="floating-label label-ssd">SSD</div>
+        ${modelUrl ? `
+          <model-viewer
+            class="model-viewer"
+            src="${escapeHtml(modelUrl)}"
+            camera-controls
+            auto-rotate
+            shadow-intensity="1"
+            exposure="0.9"
+            ar
+          >
+            <div class="viewer-fallback" slot="poster">
+              <strong>Memuat model 3D...</strong>
+              <span>${escapeHtml(selectedLesson?.file || "model.glb")}</span>
+            </div>
+          </model-viewer>
+        ` : `
+          <div class="viewer-fallback">
+            <strong>Model 3D belum tersedia</strong>
+            <span>Upload file .glb atau .gltf dari halaman Admin.</span>
+          </div>
+        `}
       </div>
 
       <aside class="control-panel card">
-        <h2>Kontrol Model</h2>
+        <h2>Model Aktif</h2>
 
-        <button class="control-button" type="button" data-viewer-control="rotate-left">Putar kiri</button>
-        <button class="control-button" type="button" data-viewer-control="rotate-right">Putar kanan</button>
-        <button class="control-button" type="button" data-viewer-control="zoom-in">Zoom masuk</button>
-        <button class="control-button" type="button" data-viewer-control="zoom-out">Zoom keluar</button>
-        <button class="control-button" type="button" data-viewer-control="reset">Reset posisi</button>
+        <div class="viewer-meta">
+          <strong>${escapeHtml(selectedLesson?.title || "Materi")}</strong>
+          <span>${escapeHtml(selectedLesson?.file || "Belum ada file")}</span>
+        </div>
 
         <p>
           <strong>${state.selectedHotspot}</strong>: ${hotspotDetails[state.selectedHotspot]}
         </p>
-        <p class="viewer-state">Rotasi ${state.viewerRotation} derajat | Zoom ${Math.round(state.viewerZoom * 100)}%</p>
+        <p class="viewer-state">Gunakan mouse, touchpad, atau layar sentuh untuk memutar dan zoom model.</p>
+
+        <div class="component-tags">
+          ${lessonItems.map((item) => `
+            <button class="tag-button" type="button" data-hotspot="${escapeHtml(getComponentHotspot(item))}">
+              ${escapeHtml(item)}
+            </button>
+          `).join("")}
+        </div>
 
         <button class="btn success" type="button" data-route-target="kuis">
           Mulai Kuis
@@ -377,15 +660,21 @@ function renderViewer() {
 
 function renderHotspotDetail() {
   const detail = componentDetails[state.selectedHotspot] ?? componentDetails.CPU;
+  const componentModelUrl = getComponentModelUrl(detail.visual);
 
   return `
     ${pageHeader(detail.title, detail.subtitle)}
 
     <section class="detail-layout">
       <div class="detail-visual card">
-        <div class="chip-visual">
-          <div class="chip-core">${detail.visual}</div>
-        </div>
+        <model-viewer
+          class="detail-model-viewer"
+          src="${escapeHtml(componentModelUrl)}"
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          exposure="0.9"
+        ></model-viewer>
 
         <p>Visual komponen ${detail.visual} pada perangkat keras komputer.</p>
       </div>
@@ -432,10 +721,100 @@ async function fetchJson(endpoint, options) {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
-    throw new Error(`API error ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API error ${response.status}`);
   }
 
   return response.json();
+}
+
+async function loadLessonsFromApi() {
+  const materiData = await fetchJson("/materi");
+
+  if (Array.isArray(materiData) && materiData.length > 0) {
+    lessons = materiData;
+  }
+
+  return lessons;
+}
+
+async function createLesson(payload) {
+  return fetchJson("/materi", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function updateLesson(id, payload) {
+  return fetchJson(`/materi/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function deleteLesson(id) {
+  return fetchJson(`/materi/${id}`, {
+    method: "DELETE",
+  });
+}
+
+async function uploadModel(file) {
+  const formData = new FormData();
+  formData.append("model", file);
+
+  const response = await fetch(`${API_BASE_URL}/uploads/models`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Upload gagal ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function loadQuizFromApi() {
+  const quizData = await fetchJson("/quiz");
+
+  if (Array.isArray(quizData) && quizData.length > 0) {
+    quizQuestions = quizData;
+  }
+
+  return quizQuestions;
+}
+
+async function createQuizQuestion(payload) {
+  return fetchJson("/quiz", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function updateQuizQuestion(id, payload) {
+  return fetchJson(`/quiz/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function deleteQuizQuestion(id) {
+  return fetchJson(`/quiz/${id}`, {
+    method: "DELETE",
+  });
 }
 
 // API Get Materi & Quiz
@@ -447,17 +826,9 @@ async function fetchJson(endpoint, options) {
 async function loadInitialData() {
   try {
     const [materiData, quizData] = await Promise.all([
-      fetchJson("/materi"),
-      fetchJson("/quiz"),
+      loadLessonsFromApi(),
+      loadQuizFromApi(),
     ]);
-
-    if (Array.isArray(materiData) && materiData.length > 0) {
-      lessons = materiData;
-    }
-
-    if (Array.isArray(quizData) && quizData.length > 0) {
-      quizQuestions = quizData;
-    }
 
     state.apiReady = true;
     state.apiMessage = "Data berhasil dimuat dari API backend.";
@@ -736,6 +1107,143 @@ function renderResults() {
   `;
 }
 
+function renderAdminMateriPanel() {
+  const form = state.adminForm;
+
+  return `
+    <div class="admin-form card">
+      <div class="admin-form-head">
+        <div>
+          <h2>${state.adminEditingId === null ? "Tambah Materi 3D" : "Edit Materi 3D"}</h2>
+          <p>Upload model .glb atau .gltf, lalu simpan materi agar muncul di halaman siswa.</p>
+        </div>
+        <button class="btn compact" type="button" data-admin-clear-form>Bersihkan</button>
+      </div>
+
+      ${state.adminMessage ? `<div class="admin-message success">${escapeHtml(state.adminMessage)}</div>` : ""}
+      ${state.adminError ? `<div class="admin-message error">${escapeHtml(state.adminError)}</div>` : ""}
+
+      <div class="admin-form-grid">
+        <label>
+          <span>Judul materi</span>
+          <input type="text" data-admin-field="title" value="${escapeHtml(form.title)}" placeholder="Contoh: Proses" />
+        </label>
+
+        <label>
+          <span>Nama file</span>
+          <input type="text" data-admin-field="file" value="${escapeHtml(form.file)}" placeholder="cpu.glb" />
+        </label>
+
+        <label class="wide">
+          <span>Deskripsi</span>
+          <textarea data-admin-field="desc" rows="3" placeholder="Ringkasan materi">${escapeHtml(form.desc)}</textarea>
+        </label>
+
+        <label class="wide">
+          <span>Komponen</span>
+          <input type="text" data-admin-field="items" value="${escapeHtml(form.items)}" placeholder="CPU, RAM, Motherboard" />
+        </label>
+
+        <label class="wide">
+          <span>URL model 3D</span>
+          <input type="text" data-admin-field="modelUrl" value="${escapeHtml(form.modelUrl)}" placeholder="/uploads/models/cpu.glb" />
+        </label>
+
+        <label class="admin-upload wide">
+          <span>Upload model 3D</span>
+          <input type="file" accept=".glb,.gltf" data-admin-upload-model />
+        </label>
+      </div>
+
+      <div class="admin-actions">
+        <button class="btn primary" type="button" data-admin-save-materi>
+          ${state.adminEditingId === null ? "Simpan Materi" : "Update Materi"}
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-table card">
+      <h2>Materi 3D Tersimpan</h2>
+      ${lessons
+        .map(
+          (lesson) => `
+            <div class="admin-row materi-admin-row">
+              <span>${escapeHtml(lesson.title)}</span>
+              <span>${escapeHtml(lesson.file || "-")}</span>
+              <span>${escapeHtml((lesson.items || []).join(", ") || "-")}</span>
+              <span class="admin-row-actions">
+                <button type="button" data-admin-edit-materi="${escapeHtml(lesson.id ?? lesson.title)}">Edit</button>
+                <button type="button" data-admin-delete-materi="${escapeHtml(lesson.id ?? lesson.title)}">Hapus</button>
+              </span>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderAdminQuizPanel() {
+  const form = state.adminQuizForm;
+
+  return `
+    <div class="admin-form card">
+      <div class="admin-form-head">
+        <div>
+          <h2>${state.adminQuizEditingId === null ? "Tambah Soal Kuis" : "Edit Soal Kuis"}</h2>
+          <p>Tulis pertanyaan, pisahkan pilihan jawaban dengan koma, lalu isi nomor jawaban benar mulai dari 0.</p>
+        </div>
+        <button class="btn compact" type="button" data-admin-clear-quiz>Bersihkan</button>
+      </div>
+
+      ${state.adminQuizMessage ? `<div class="admin-message success">${escapeHtml(state.adminQuizMessage)}</div>` : ""}
+      ${state.adminQuizError ? `<div class="admin-message error">${escapeHtml(state.adminQuizError)}</div>` : ""}
+
+      <div class="admin-form-grid">
+        <label class="wide">
+          <span>Pertanyaan</span>
+          <textarea data-admin-quiz-field="question" rows="3" placeholder="Contoh: Komponen apa yang memproses instruksi?">${escapeHtml(form.question)}</textarea>
+        </label>
+
+        <label class="wide">
+          <span>Pilihan jawaban</span>
+          <input type="text" data-admin-quiz-field="answers" value="${escapeHtml(form.answers)}" placeholder="Monitor, Keyboard, CPU, Printer" />
+        </label>
+
+        <label>
+          <span>Indeks jawaban benar</span>
+          <input type="number" min="0" max="3" data-admin-quiz-field="correct" value="${escapeHtml(form.correct)}" />
+        </label>
+      </div>
+
+      <div class="admin-actions">
+        <button class="btn primary" type="button" data-admin-save-quiz>
+          ${state.adminQuizEditingId === null ? "Simpan Soal" : "Update Soal"}
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-table card">
+      <h2>Bank Soal Kuis</h2>
+      ${quizQuestions
+        .map(
+          (question, index) => `
+            <div class="admin-row quiz-admin-row">
+              <span>Soal ${index + 1}</span>
+              <span>${escapeHtml(question.question)}</span>
+              <span>${escapeHtml(question.answers[question.correct] || "-")}</span>
+              <span class="admin-row-actions">
+                <button type="button" data-admin-edit-quiz="${escapeHtml(question.id ?? index)}">Edit</button>
+                <button type="button" data-admin-delete-quiz="${escapeHtml(question.id ?? index)}">Hapus</button>
+              </span>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderAdmin() {
   const leaderboard = getLeaderboard();
   const tabs = [
@@ -746,22 +1254,7 @@ function renderAdmin() {
     ["pengguna", "Pengguna"],
   ];
   const adminPanels = {
-    materi: `
-      <div class="admin-table card">
-        <h2>Materi table</h2>
-        ${lessons
-          .map(
-            (lesson) => `
-              <div class="admin-row">
-                <span>${lesson.title}</span>
-                <span>${lesson.file}</span>
-                <span>Aktif</span>
-              </div>
-            `
-          )
-          .join("")}
-      </div>
-    `,
+    materi: renderAdminMateriPanel(),
     kategori: `
       <div class="admin-table card">
         <h2>Kategori Materi</h2>
@@ -778,22 +1271,7 @@ function renderAdmin() {
           .join("")}
       </div>
     `,
-    soal: `
-      <div class="admin-table card">
-        <h2>Bank Soal Kuis</h2>
-        ${quizQuestions
-          .map(
-            (question, index) => `
-              <div class="admin-row question-admin-row">
-                <span>Soal ${index + 1}</span>
-                <span>${question.question}</span>
-                <span>${question.answers[question.correct]}</span>
-              </div>
-            `
-          )
-          .join("")}
-      </div>
-    `,
+    soal: renderAdminQuizPanel(),
     logs: `
       <div class="logs card">
         <h2>API logs</h2>
@@ -860,7 +1338,7 @@ function renderAdmin() {
           <article class="stat-card card">
             <span></span>
             <p>Materi aktif</p>
-            <strong>12</strong>
+            <strong>${lessons.length}</strong>
           </article>
 
           <article class="stat-card card">
@@ -897,6 +1375,89 @@ function renderPlaceholder(title, subtitle) {
       <p>${subtitle}</p>
     </section>
   `;
+}
+
+function findLessonByKey(key) {
+  return lessons.find((lesson) => {
+    return String(lesson.id) === String(key) || lesson.title === key;
+  });
+}
+
+function findQuizByKey(key) {
+  return quizQuestions.find((question, index) => {
+    return String(question.id ?? index) === String(key);
+  });
+}
+
+async function refreshLessonsAfterAdminChange(message) {
+  await loadLessonsFromApi();
+  state.adminMessage = message;
+  state.adminError = "";
+  render();
+}
+
+async function refreshQuizAfterAdminChange(message) {
+  await loadQuizFromApi();
+  state.currentQuestion = Math.min(state.currentQuestion, quizQuestions.length - 1);
+  state.adminQuizMessage = message;
+  state.adminQuizError = "";
+  render();
+}
+
+async function handleAdminSaveMateri() {
+  const payload = normalizeLessonPayload(state.adminForm);
+
+  if (!payload.title) {
+    state.adminError = "Judul materi wajib diisi.";
+    state.adminMessage = "";
+    render();
+    return;
+  }
+
+  try {
+    if (state.adminEditingId === null) {
+      await createLesson(payload);
+      clearAdminForm();
+      await refreshLessonsAfterAdminChange("Materi baru berhasil disimpan.");
+      return;
+    }
+
+    await updateLesson(state.adminEditingId, payload);
+    clearAdminForm();
+    await refreshLessonsAfterAdminChange("Materi berhasil diperbarui.");
+  } catch (error) {
+    state.adminError = error.message || "Gagal menyimpan materi.";
+    state.adminMessage = "";
+    render();
+  }
+}
+
+async function handleAdminSaveQuiz() {
+  const payload = normalizeQuizPayload(state.adminQuizForm);
+
+  if (!payload.question || payload.answers.length < 2 || !Number.isInteger(payload.correct) || payload.correct < 0 || payload.correct >= payload.answers.length) {
+    state.adminQuizError = "Pertanyaan, minimal 2 jawaban, dan indeks jawaban benar harus valid.";
+    state.adminQuizMessage = "";
+    render();
+    return;
+  }
+
+  try {
+    if (state.adminQuizEditingId === null) {
+      await createQuizQuestion(payload);
+      clearAdminQuizForm();
+      await refreshQuizAfterAdminChange("Soal baru berhasil disimpan.");
+      return;
+    }
+
+    await updateQuizQuestion(state.adminQuizEditingId, payload);
+    clearAdminQuizForm();
+    await refreshQuizAfterAdminChange("Soal berhasil diperbarui.");
+  } catch (error) {
+    state.adminQuizError = error.message || "Gagal menyimpan soal.";
+    state.adminQuizMessage = "";
+    render();
+  }
 }
 
 const routes = {
@@ -974,6 +1535,141 @@ function bindScreenEvents() {
     });
   });
 
+  app.querySelectorAll("[data-admin-field]").forEach((field) => {
+    field.addEventListener("input", (event) => {
+      state.adminForm[field.dataset.adminField] = event.target.value;
+    });
+  });
+
+  app.querySelectorAll("[data-admin-quiz-field]").forEach((field) => {
+    field.addEventListener("input", (event) => {
+      state.adminQuizForm[field.dataset.adminQuizField] = event.target.value;
+    });
+  });
+
+  const adminUpload = app.querySelector("[data-admin-upload-model]");
+
+  if (adminUpload) {
+    adminUpload.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+
+      if (!file) return;
+
+      try {
+        state.adminMessage = "Mengupload model 3D...";
+        state.adminError = "";
+        render();
+
+        const uploadResult = await uploadModel(file);
+        state.adminForm.file = uploadResult.fileName;
+        state.adminForm.modelUrl = uploadResult.url;
+        state.adminMessage = "Model 3D berhasil diupload. Simpan materi untuk memakai model ini.";
+        state.adminError = "";
+        render();
+      } catch (error) {
+        state.adminError = error.message || "Upload model 3D gagal.";
+        state.adminMessage = "";
+        render();
+      }
+    });
+  }
+
+  const saveMateriButton = app.querySelector("[data-admin-save-materi]");
+
+  if (saveMateriButton) {
+    saveMateriButton.addEventListener("click", handleAdminSaveMateri);
+  }
+
+  const clearFormButton = app.querySelector("[data-admin-clear-form]");
+
+  if (clearFormButton) {
+    clearFormButton.addEventListener("click", () => {
+      clearAdminForm();
+      render();
+    });
+  }
+
+  app.querySelectorAll("[data-admin-edit-materi]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const lesson = findLessonByKey(button.dataset.adminEditMateri);
+
+      if (lesson) {
+        setAdminFormFromLesson(lesson);
+        render();
+      }
+    });
+  });
+
+  app.querySelectorAll("[data-admin-delete-materi]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const lesson = findLessonByKey(button.dataset.adminDeleteMateri);
+
+      if (!lesson) return;
+
+      const approved = window.confirm(`Hapus materi ${lesson.title}?`);
+
+      if (!approved) return;
+
+      try {
+        await deleteLesson(lesson.id ?? lesson.title);
+        clearAdminForm();
+        await refreshLessonsAfterAdminChange("Materi berhasil dihapus.");
+      } catch (error) {
+        state.adminError = error.message || "Gagal menghapus materi.";
+        state.adminMessage = "";
+        render();
+      }
+    });
+  });
+
+  const saveQuizButton = app.querySelector("[data-admin-save-quiz]");
+
+  if (saveQuizButton) {
+    saveQuizButton.addEventListener("click", handleAdminSaveQuiz);
+  }
+
+  const clearQuizButton = app.querySelector("[data-admin-clear-quiz]");
+
+  if (clearQuizButton) {
+    clearQuizButton.addEventListener("click", () => {
+      clearAdminQuizForm();
+      render();
+    });
+  }
+
+  app.querySelectorAll("[data-admin-edit-quiz]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const question = findQuizByKey(button.dataset.adminEditQuiz);
+
+      if (question) {
+        setAdminQuizFormFromQuestion(question);
+        render();
+      }
+    });
+  });
+
+  app.querySelectorAll("[data-admin-delete-quiz]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const question = findQuizByKey(button.dataset.adminDeleteQuiz);
+
+      if (!question) return;
+
+      const approved = window.confirm("Hapus soal kuis ini?");
+
+      if (!approved) return;
+
+      try {
+        await deleteQuizQuestion(question.id);
+        clearAdminQuizForm();
+        await refreshQuizAfterAdminChange("Soal berhasil dihapus.");
+      } catch (error) {
+        state.adminQuizError = error.message || "Gagal menghapus soal.";
+        state.adminQuizMessage = "";
+        render();
+      }
+    });
+  });
+
   const nameInput = app.querySelector("#studentName");
 
   if (nameInput) {
@@ -1048,6 +1744,8 @@ navButtons.forEach((button) => {
   button.addEventListener("click", () => setRoute(button.dataset.route));
 });
 
+window.addEventListener("hashchange", syncRouteFromHash);
+
 const initialRoute = window.location.hash.replace("#", "");
 
 if (routes[initialRoute]) {
@@ -1060,6 +1758,11 @@ window.Informatika3D = {
   savePermanentScore,
   filterLessons,
   getViewerTransform,
+  parseItemsInput,
+  normalizeLessonPayload,
+  normalizeQuizPayload,
+  getLessonModelUrl,
+  getComponentModelUrl,
 };
 
 render();
