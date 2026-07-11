@@ -1062,9 +1062,8 @@ function renderQuiz() {
   const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
   const hasName = isStudentNameReady();
   const canAnswer = canAnswerQuiz();
-  const selectedCorrect = isSelectedAnswerCorrect();
   const hasSelectedAnswer = state.selectedAnswer !== null;
-  const scorePanelClass = hasSelectedAnswer ? (selectedCorrect ? "is-correct" : "is-wrong") : "";
+  const answeredCount = state.answers.filter((answer) => answer !== undefined && answer !== null).length;
 
   return `
     ${pageHeader(
@@ -1121,14 +1120,14 @@ function renderQuiz() {
         </button>
       </div>
 
-      <aside class="score-side card ${scorePanelClass}">
+      <aside class="score-side card">
         <h2>Status kuis</h2>
-        <strong class="score-number">${calculateScore(state.answers)}</strong>
-        <span>poin sementara</span>
+        <strong class="score-number">${answeredCount}</strong>
+        <span>dari ${quizQuestions.length} soal dijawab</span>
 
         <p><b>Nama:</b> ${escapeHtml(state.studentName || "belum diisi")}</p>
-        <p>${!hasName ? "Isi nama terlebih dahulu." : !state.quizNameConfirmed ? "Klik Mulai untuk membuka pilihan jawaban." : state.selectedAnswer === null ? "Pilih salah satu jawaban." : selectedCorrect ? "Jawaban benar. + poin masuk ke skor." : "Jawaban belum tepat."}</p>
-        <p>${hasSelectedAnswer ? `Jawaban benar: ${escapeHtml(question.answers[question.correct])}` : "Skor akan berubah setelah jawaban dipilih."}</p>
+        <p>${!hasName ? "Isi nama terlebih dahulu." : !state.quizNameConfirmed ? "Klik Mulai untuk membuka pilihan jawaban." : hasSelectedAnswer ? "Jawaban sudah dipilih. Lanjutkan ke soal berikutnya." : "Pilih salah satu jawaban."}</p>
+        <p>Nilai dan pembahasan muncul setelah kuis selesai.</p>
       </aside>
     </section>
   `;
@@ -1139,6 +1138,7 @@ function renderResults() {
     name: "Dimas Saputra",
     score: 80,
     total: 100,
+    answers: [],
   };
 
   const leaderboard = getLeaderboard();
@@ -1457,6 +1457,32 @@ function renderAdmin() {
           ${adminPanels[state.adminTab] ?? adminPanels.materi}
         </section>
       </div>
+    </section>
+
+    <section class="answer-review card">
+      <h2>Review Jawaban</h2>
+      ${quizQuestions
+        .map((question, index) => {
+          const selectedIndex = result.answers?.[index];
+          const selectedText = selectedIndex === undefined || selectedIndex === null
+            ? "Tidak dijawab"
+            : question.answers[selectedIndex] || "Tidak dijawab";
+          const correctText = question.answers[question.correct] || "-";
+          const isCorrect = selectedIndex === question.correct;
+
+          return `
+            <div class="review-row ${isCorrect ? "is-correct" : "is-wrong"}">
+              <div>
+                <strong>Soal ${index + 1}</strong>
+                <p>${escapeHtml(question.question)}</p>
+              </div>
+              <span>Jawaban kamu: ${escapeHtml(selectedText)}</span>
+              <span>Jawaban benar: ${escapeHtml(correctText)}</span>
+              <b>${isCorrect ? "Benar" : "Salah"}</b>
+            </div>
+          `;
+        })
+        .join("")}
     </section>
   `;
 }

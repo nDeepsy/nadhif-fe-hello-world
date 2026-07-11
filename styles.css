@@ -986,16 +986,6 @@ button {
   padding: 28px;
 }
 
-.score-side.is-correct {
-  border-color: var(--success);
-  background: #f4fbf7;
-}
-
-.score-side.is-wrong {
-  border-color: #c2410c;
-  background: #fff8f2;
-}
-
 .score-side h2 {
   margin: 0 0 20px;
   font-size: 24px;
@@ -1024,6 +1014,52 @@ button {
   gap: 54px;
   margin-top: 40px;
   margin-left: 32px;
+}
+
+.answer-review {
+  margin: 34px 32px 0;
+  padding: 28px;
+}
+
+.answer-review h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 1.4fr 220px 220px 90px;
+  gap: 16px;
+  align-items: center;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  padding: 16px;
+  background: #ffffff;
+}
+
+.review-row.is-correct {
+  border-left-color: var(--success);
+}
+
+.review-row.is-wrong {
+  border-left-color: #c2410c;
+}
+
+.review-row p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.review-row span {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.review-row b {
+  color: var(--brand);
 }
 
 .result-summary {
@@ -1426,6 +1462,15 @@ button {
   .result-layout,
   .detail-layout {
     margin-left: 0;
+  }
+
+  .answer-review {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .review-row {
+    grid-template-columns: 1fr;
   }
 
   .admin-layout {
