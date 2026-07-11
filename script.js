@@ -1005,7 +1005,6 @@ function renderQuiz() {
     <small class="name-warning">
     ${escapeHtml(state.nameWarning || "")}
     </small>
-      <strong>Leaderboard permanen</strong>
     </section>
 
     <section class="quiz-layout">

@@ -839,7 +839,7 @@ button {
 
 .quiz-name {
   display: grid;
-  grid-template-columns: 120px 1fr 190px;
+  grid-template-columns: 120px 1fr;
   align-items: center;
   width: 820px;
   height: 52px;
@@ -848,8 +848,7 @@ button {
   box-shadow: none;
 }
 
-.quiz-name label,
-.quiz-name strong {
+.quiz-name label {
   font-weight: 800;
 }
 
@@ -859,11 +858,6 @@ button {
   outline: 0;
   color: var(--muted);
   background: transparent;
-}
-
-.quiz-name strong {
-  color: var(--success);
-  text-align: right;
 }
 
 .quiz-layout {
@@ -1453,15 +1447,6 @@ button {
   }
 }
 
-.name-warning {
-  display: block;
-  grid-column: 2 / 4;
-  margin-top: -4px;
-  color: #c2410c;
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .btn.danger {
   border-color: #c2410c;
   background: #c2410c;
@@ -1475,7 +1460,7 @@ button {
 
 .name-warning {
   display: block;
-  grid-column: 2 / 4;
+  grid-column: 2;
   margin-top: -4px;
   color: #c2410c;
   font-size: 13px;
