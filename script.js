@@ -451,9 +451,6 @@ function renderHome() {
   const heroModelUrl = getLessonModelUrl({ file: "cpu.glb" });
 
   return `
-    <div class="api-status ${state.apiReady ? "is-online" : "is-offline"}">
-       ${state.apiMessage}
-    </div>
     <section class="home-grid">
       <div class="hero-copy">
         <p class="eyebrow">Media Pembelajaran Interaktif 3D</p>
@@ -483,7 +480,12 @@ function renderHome() {
           auto-rotate
           shadow-intensity="1"
           exposure="0.9"
-        ></model-viewer>
+        >
+          <div class="model-loading-card">
+            <strong>Model 3D perangkat komputer</strong>
+            <span>Motherboard, CPU, RAM, dan slot komponen.</span>
+          </div>
+        </model-viewer>
 
         <p class="preview-caption">
           Model 3D motherboard, CPU, RAM, dan komponen komputer dapat diputar langsung.
@@ -620,6 +622,10 @@ function renderViewer() {
               <strong>Memuat model 3D...</strong>
               <span>${escapeHtml(selectedLesson?.file || "model.glb")}</span>
             </div>
+            <div class="model-loading-card">
+              <strong>${escapeHtml(selectedLesson?.title || "Model 3D")}</strong>
+              <span>${escapeHtml(selectedLesson?.file || "model.glb")}</span>
+            </div>
           </model-viewer>
         ` : `
           <div class="viewer-fallback">
@@ -674,7 +680,12 @@ function renderHotspotDetail() {
           auto-rotate
           shadow-intensity="1"
           exposure="0.9"
-        ></model-viewer>
+        >
+          <div class="model-loading-card">
+            <strong>${escapeHtml(detail.visual)}</strong>
+            <span>Model 3D komponen komputer.</span>
+          </div>
+        </model-viewer>
 
         <p>Visual komponen ${detail.visual} pada perangkat keras komputer.</p>
       </div>
