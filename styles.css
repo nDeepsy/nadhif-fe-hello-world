@@ -870,12 +870,13 @@ button {
 
 .quiz-name {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 120px 1fr 110px;
   align-items: center;
   width: 820px;
-  height: 52px;
+  min-height: 64px;
   margin-top: 14px;
-  padding: 0 20px;
+  gap: 12px;
+  padding: 10px 20px;
   box-shadow: none;
 }
 
@@ -885,10 +886,24 @@ button {
 
 .quiz-name input {
   width: 100%;
-  border: 0;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   outline: 0;
-  color: var(--muted);
-  background: transparent;
+  color: var(--ink);
+  background: #ffffff;
+  padding: 0 12px;
+}
+
+.quiz-name-confirm {
+  width: 100%;
+  min-height: 42px;
+}
+
+.quiz-name-confirm.is-confirmed {
+  border-color: var(--success);
+  background: var(--success);
+  color: #ffffff;
 }
 
 .quiz-layout {
@@ -1505,7 +1520,7 @@ button {
 
 .name-warning {
   display: block;
-  grid-column: 2;
+  grid-column: 2 / 4;
   margin-top: -4px;
   color: #c2410c;
   font-size: 13px;

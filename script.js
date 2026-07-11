@@ -11,6 +11,7 @@ const state = {
   route: "beranda",
   selectedHotspot: "CPU",
   studentName: "",
+  quizNameConfirmed: false,
   nameWarning: "",
   currentQuestion: 0,
   selectedAnswer: null,
@@ -931,6 +932,10 @@ function isStudentNameReady() {
   return state.studentName.trim().length > 0;
 }
 
+function canAnswerQuiz() {
+  return isStudentNameReady() && state.quizNameConfirmed;
+}
+
 function isSelectedAnswerCorrect() {
   const question = quizQuestions[state.currentQuestion];
 
@@ -1056,6 +1061,7 @@ function renderQuiz() {
   const question = quizQuestions[state.currentQuestion];
   const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
   const hasName = isStudentNameReady();
+  const canAnswer = canAnswerQuiz();
   const selectedCorrect = isSelectedAnswerCorrect();
   const hasSelectedAnswer = state.selectedAnswer !== null;
   const scorePanelClass = hasSelectedAnswer ? (selectedCorrect ? "is-correct" : "is-wrong") : "";
@@ -1075,8 +1081,11 @@ function renderQuiz() {
        placeholder="Masukkan nama kamu"
       autocomplete="name"
      />
+      <button class="btn compact quiz-name-confirm ${state.quizNameConfirmed ? "is-confirmed" : ""}" type="button" data-confirm-quiz-name>
+        ${state.quizNameConfirmed ? "OK" : "Mulai"}
+      </button>
     <small class="name-warning">
-    ${escapeHtml(state.nameWarning || (!hasName ? "Nama wajib diisi agar pilihan jawaban aktif." : ""))}
+    ${escapeHtml(state.nameWarning || (!hasName ? "Nama wajib diisi, lalu klik Mulai." : !state.quizNameConfirmed ? "Klik Mulai agar pilihan jawaban aktif." : `Siap mengerjakan sebagai ${normalizeName(state.studentName)}.`))}
     </small>
     </section>
 
@@ -1095,10 +1104,10 @@ function renderQuiz() {
       .map(
         (answer, index) => `
                 <button
-                  class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""} ${!hasName ? "is-disabled" : ""}"
+                  class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""} ${!canAnswer ? "is-disabled" : ""}"
                   type="button"
                   data-answer="${index}"
-                  ${!hasName ? "disabled" : ""}
+                  ${!canAnswer ? "disabled" : ""}
                 >
                   ${String.fromCharCode(65 + index)}. ${answer}
                 </button>
@@ -1118,7 +1127,7 @@ function renderQuiz() {
         <span>poin sementara</span>
 
         <p><b>Nama:</b> ${escapeHtml(state.studentName || "belum diisi")}</p>
-        <p>${!hasName ? "Isi nama terlebih dahulu." : state.selectedAnswer === null ? "Pilih salah satu jawaban." : selectedCorrect ? "Jawaban benar. + poin masuk ke skor." : "Jawaban belum tepat."}</p>
+        <p>${!hasName ? "Isi nama terlebih dahulu." : !state.quizNameConfirmed ? "Klik Mulai untuk membuka pilihan jawaban." : state.selectedAnswer === null ? "Pilih salah satu jawaban." : selectedCorrect ? "Jawaban benar. + poin masuk ke skor." : "Jawaban belum tepat."}</p>
         <p>${hasSelectedAnswer ? `Jawaban benar: ${escapeHtml(question.answers[question.correct])}` : "Skor akan berubah setelah jawaban dipilih."}</p>
       </aside>
     </section>
@@ -1768,14 +1777,36 @@ function bindScreenEvents() {
   if (nameInput) {
     nameInput.addEventListener("input", (event) => {
       state.studentName = event.target.value;
+      state.quizNameConfirmed = false;
       state.nameWarning = "";
+      state.selectedAnswer = null;
+    });
+  }
+
+  const confirmQuizNameButton = app.querySelector("[data-confirm-quiz-name]");
+
+  if (confirmQuizNameButton) {
+    confirmQuizNameButton.addEventListener("click", () => {
+      if (!isStudentNameReady()) {
+        state.nameWarning = "Nama harus diisi terlebih dahulu.";
+        state.quizNameConfirmed = false;
+        render();
+        return;
+      }
+
+      state.studentName = normalizeName(state.studentName);
+      state.quizNameConfirmed = true;
+      state.nameWarning = "";
+      render();
     });
   }
 
   app.querySelectorAll("[data-answer]").forEach((button) => {
     button.addEventListener("click", () => {
-      if (!isStudentNameReady()) {
-        state.nameWarning = "Nama harus diisi sebelum memilih jawaban.";
+      if (!canAnswerQuiz()) {
+        state.nameWarning = isStudentNameReady()
+          ? "Klik Mulai terlebih dahulu sebelum memilih jawaban."
+          : "Nama harus diisi sebelum memilih jawaban.";
         render();
         return;
       }
@@ -1790,8 +1821,10 @@ function bindScreenEvents() {
 
   if (nextButton) {
     nextButton.addEventListener("click", () => {
-      if (!isStudentNameReady()) {
-        state.nameWarning = "Nama harus diisi sebelum melanjutkan kuis.";
+      if (!canAnswerQuiz()) {
+        state.nameWarning = isStudentNameReady()
+          ? "Klik Mulai terlebih dahulu sebelum melanjutkan kuis."
+          : "Nama harus diisi sebelum melanjutkan kuis.";
         render();
         return;
       }
@@ -1815,6 +1848,7 @@ function bindScreenEvents() {
       state.currentQuestion = 0;
       state.selectedAnswer = null;
       state.answers = [];
+      state.quizNameConfirmed = false;
       setRoute("kuis");
     });
   }
