@@ -137,7 +137,17 @@ assert.strictEqual(
 
 assert.strictEqual(
   api.getComponentModelUrl("Motherboard"),
-  "http://localhost:3000/uploads/models/cpu.glb"
+  "http://localhost:3000/uploads/models/motherboard.glb"
+);
+
+assert.strictEqual(
+  api.getComponentModelUrl("Mouse"),
+  "http://localhost:3000/uploads/models/mouse.glb"
+);
+
+assert.strictEqual(
+  api.getComponentModelUrl("Scanner"),
+  "http://localhost:3000/uploads/models/scanner.glb"
 );
 
 console.log("quiz tests passed");

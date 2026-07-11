@@ -329,21 +329,23 @@ function getLessonModelUrl(lesson) {
 
 function getComponentModelUrl(component) {
   const key = String(component || "").toUpperCase();
+  const fileMap = {
+    CPU: "cpu-chip.glb",
+    RAM: "ram.glb",
+    MOTHERBOARD: "motherboard.glb",
+    KEYBOARD: "keyboard.glb",
+    MOUSE: "mouse.glb",
+    SCANNER: "scanner.glb",
+    MONITOR: "monitor.glb",
+    PRINTER: "printer.glb",
+    SPEAKER: "speaker.glb",
+    SSD: "ssd.glb",
+    "HARD DISK": "hard-disk.glb",
+    "FLASH DRIVE": "flash-drive.glb",
+  };
 
-  if (["CPU", "RAM", "MOTHERBOARD"].includes(key)) {
-    return getLessonModelUrl({ file: "cpu.glb" });
-  }
-
-  if (["KEYBOARD", "MOUSE", "SCANNER"].includes(key)) {
-    return getLessonModelUrl({ file: "input.glb" });
-  }
-
-  if (["MONITOR", "PRINTER", "SPEAKER"].includes(key)) {
-    return getLessonModelUrl({ file: "output.glb" });
-  }
-
-  if (["SSD", "HARD DISK", "FLASH DRIVE"].includes(key)) {
-    return getLessonModelUrl({ file: "storage.glb" });
+  if (fileMap[key]) {
+    return getLessonModelUrl({ file: fileMap[key] });
   }
 
   return getLessonModelUrl({ file: "cpu.glb" });
@@ -579,6 +581,9 @@ function renderLessons() {
               <h2>${lesson.title}</h2>
               <p>${lesson.desc}</p>
               <div class="category-components">
+                <button class="component-chip is-overall" type="button" data-open-lesson="${escapeHtml(lesson.title)}">
+                  Keseluruhan
+                </button>
                 ${(lesson.items || []).map((item) => `
                   <button class="component-chip" type="button" data-open-component="${escapeHtml(getComponentHotspot(item))}" data-component-lesson="${escapeHtml(lesson.title)}">
                     ${escapeHtml(item)}
@@ -733,7 +738,7 @@ function renderHotspotDetail() {
           </div>
         </model-viewer>
 
-        <p>Visual komponen ${detail.visual} pada perangkat keras komputer.</p>
+        <p>Visual 3D khusus komponen ${detail.visual}. Gunakan tombol Keseluruhan di halaman materi untuk melihat semua komponen.</p>
       </div>
 
       <div class="detail-content card">
