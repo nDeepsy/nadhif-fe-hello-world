@@ -142,6 +142,17 @@ const componentDetails = {
     ],
     prompt: "Mouse memudahkan pengguna berinteraksi dengan tampilan grafis komputer.",
   },
+  SCANNER: {
+    title: "Detail Perangkat Scanner",
+    subtitle: "Scanner mengubah dokumen fisik menjadi data digital.",
+    visual: "Scanner",
+    bullets: [
+      "Memindai gambar atau dokumen kertas.",
+      "Menghasilkan file digital seperti JPG atau PDF.",
+      "Termasuk perangkat input.",
+    ],
+    prompt: "Scanner membantu komputer menerima informasi dari dokumen fisik.",
+  },
   MONITOR: {
     title: "Detail Perangkat Monitor",
     subtitle: "Monitor menampilkan hasil proses komputer dalam bentuk visual.",
@@ -401,8 +412,20 @@ function getViewerTransform({ rotation, zoom }) {
 function getLessonHotspot(title) {
   const lessonTitle = String(title || "").toLowerCase();
 
+  if (lessonTitle.includes("keyboard")) return "KEYBOARD";
+  if (lessonTitle.includes("mouse")) return "MOUSE";
+  if (lessonTitle.includes("scanner")) return "SCANNER";
+  if (lessonTitle.includes("motherboard")) return "MOTHERBOARD";
+  if (lessonTitle.includes("monitor")) return "MONITOR";
+  if (lessonTitle.includes("printer")) return "PRINTER";
+  if (lessonTitle.includes("speaker")) return "SPEAKER";
+  if (lessonTitle.includes("hard")) return "HARD DISK";
+  if (lessonTitle.includes("flash")) return "FLASH DRIVE";
+  if (lessonTitle.includes("ssd")) return "SSD";
+  if (lessonTitle.includes("ram")) return "RAM";
   if (lessonTitle.includes("storage")) return "SSD";
-  if (lessonTitle.includes("input")) return "RAM";
+  if (lessonTitle.includes("input")) return "KEYBOARD";
+  if (lessonTitle.includes("output")) return "MONITOR";
   return "CPU";
 }
 
@@ -540,9 +563,28 @@ function renderLessons() {
       .map(
         (lesson) => `
             <article class="category-card card">
+              <model-viewer
+                class="category-model-viewer"
+                src="${escapeHtml(getLessonModelUrl(lesson))}"
+                camera-controls
+                auto-rotate
+                shadow-intensity="1"
+                exposure="0.9"
+              >
+                <div class="model-loading-card compact" slot="poster">
+                  <strong>${escapeHtml(lesson.title)}</strong>
+                </div>
+              </model-viewer>
               <span class="category-icon">${lesson.title.charAt(0)}</span>
               <h2>${lesson.title}</h2>
               <p>${lesson.desc}</p>
+              <div class="category-components">
+                ${(lesson.items || []).map((item) => `
+                  <button class="component-chip" type="button" data-open-component="${escapeHtml(getComponentHotspot(item))}" data-component-lesson="${escapeHtml(lesson.title)}">
+                    ${escapeHtml(item)}
+                  </button>
+                `).join("")}
+              </div>
               <button class="btn compact" type="button" data-open-lesson="${lesson.title}">
                 Buka ${lesson.title}
               </button>
@@ -656,6 +698,10 @@ function renderViewer() {
           `).join("")}
         </div>
 
+        <button class="btn" type="button" data-route-target="materi">
+          Kembali ke Materi
+        </button>
+
         <button class="btn success" type="button" data-route-target="kuis">
           Mulai Kuis
         </button>
@@ -711,6 +757,10 @@ function renderHotspotDetail() {
         </div>
 
         <div class="detail-actions">
+          <button class="btn" type="button" data-route-target="materi">
+            Kembali ke Materi
+          </button>
+
           <button class="btn" type="button" data-route-target="viewer">
             Kembali ke Viewer
           </button>
@@ -865,7 +915,21 @@ function calculateScore(answers) {
     return quizQuestions[index]?.correct === answer;
   });
 
-  return correctAnswers.length * 20;
+  if (quizQuestions.length === 0) {
+    return 0;
+  }
+
+  return Math.round((correctAnswers.length / quizQuestions.length) * 100);
+}
+
+function isStudentNameReady() {
+  return state.studentName.trim().length > 0;
+}
+
+function isSelectedAnswerCorrect() {
+  const question = quizQuestions[state.currentQuestion];
+
+  return state.selectedAnswer !== null && question?.correct === state.selectedAnswer;
 }
 
 function normalizeName(value) {
@@ -986,11 +1050,15 @@ async function finishQuiz() {
 function renderQuiz() {
   const question = quizQuestions[state.currentQuestion];
   const progressWidth = ((state.currentQuestion + 1) / quizQuestions.length) * 100;
+  const hasName = isStudentNameReady();
+  const selectedCorrect = isSelectedAnswerCorrect();
+  const hasSelectedAnswer = state.selectedAnswer !== null;
+  const scorePanelClass = hasSelectedAnswer ? (selectedCorrect ? "is-correct" : "is-wrong") : "";
 
   return `
     ${pageHeader(
     "Kuis Perangkat Keras",
-    "Isi nama dulu. Skor masuk leaderboard permanen setelah selesai."
+    "Isi nama dulu, lalu pilih jawaban. Skor akan dihitung otomatis."
   )}
 
     <section class="quiz-name card">
@@ -1003,7 +1071,7 @@ function renderQuiz() {
       autocomplete="name"
      />
     <small class="name-warning">
-    ${escapeHtml(state.nameWarning || "")}
+    ${escapeHtml(state.nameWarning || (!hasName ? "Nama wajib diisi agar pilihan jawaban aktif." : ""))}
     </small>
     </section>
 
@@ -1022,9 +1090,10 @@ function renderQuiz() {
       .map(
         (answer, index) => `
                 <button
-                  class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""}"
+                  class="answer-button ${state.selectedAnswer === index ? "is-selected" : ""} ${!hasName ? "is-disabled" : ""}"
                   type="button"
                   data-answer="${index}"
+                  ${!hasName ? "disabled" : ""}
                 >
                   ${String.fromCharCode(65 + index)}. ${answer}
                 </button>
@@ -1038,14 +1107,14 @@ function renderQuiz() {
         </button>
       </div>
 
-      <aside class="score-side card">
+      <aside class="score-side card ${scorePanelClass}">
         <h2>Status kuis</h2>
         <strong class="score-number">${calculateScore(state.answers)}</strong>
         <span>poin sementara</span>
 
         <p><b>Nama:</b> ${escapeHtml(state.studentName || "belum diisi")}</p>
-        <p>${state.selectedAnswer === null ? "Pilih salah satu jawaban" : "Jawaban sudah tersimpan"}</p>
-        <p>Benar/salah tidak tampil di tombol</p>
+        <p>${!hasName ? "Isi nama terlebih dahulu." : state.selectedAnswer === null ? "Pilih salah satu jawaban." : selectedCorrect ? "Jawaban benar. + poin masuk ke skor." : "Jawaban belum tepat."}</p>
+        <p>${hasSelectedAnswer ? `Jawaban benar: ${escapeHtml(question.answers[question.correct])}` : "Skor akan berubah setelah jawaban dipilih."}</p>
       </aside>
     </section>
   `;
@@ -1497,8 +1566,17 @@ function bindScreenEvents() {
   app.querySelectorAll("[data-open-lesson]").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedLesson = button.dataset.openLesson;
-      state.selectedHotspot = getLessonHotspot(state.selectedLesson);
+      const lesson = findLessonByKey(state.selectedLesson);
+      state.selectedHotspot = getComponentHotspot(lesson?.items?.[0] || state.selectedLesson);
       setRoute("viewer");
+    });
+  });
+
+  app.querySelectorAll("[data-open-component]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedLesson = button.dataset.componentLesson || state.selectedLesson;
+      state.selectedHotspot = button.dataset.openComponent;
+      setRoute("detail");
     });
   });
 
@@ -1691,6 +1769,12 @@ function bindScreenEvents() {
 
   app.querySelectorAll("[data-answer]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (!isStudentNameReady()) {
+        state.nameWarning = "Nama harus diisi sebelum memilih jawaban.";
+        render();
+        return;
+      }
+
       state.selectedAnswer = Number(button.dataset.answer);
       state.answers[state.currentQuestion] = state.selectedAnswer;
       render();
@@ -1701,6 +1785,12 @@ function bindScreenEvents() {
 
   if (nextButton) {
     nextButton.addEventListener("click", () => {
+      if (!isStudentNameReady()) {
+        state.nameWarning = "Nama harus diisi sebelum melanjutkan kuis.";
+        render();
+        return;
+      }
+
       if (state.selectedAnswer === null) return;
 
       if (state.currentQuestion === quizQuestions.length - 1) {

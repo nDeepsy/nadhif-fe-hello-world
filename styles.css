@@ -404,8 +404,17 @@ button {
 }
 
 .category-card {
-  min-height: 174px;
+  min-height: 360px;
   padding: 24px;
+}
+
+.category-model-viewer {
+  display: block;
+  width: 100%;
+  height: 132px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  background: #eef5fd;
 }
 
 .category-empty {
@@ -441,10 +450,28 @@ button {
 }
 
 .category-card p {
-  min-height: 44px;
+  min-height: 66px;
   margin: 0 0 14px 70px;
   color: var(--muted);
   line-height: 1.35;
+}
+
+.category-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.component-chip {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  background: #f7fbff;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .lesson-layout {
@@ -684,6 +711,10 @@ button {
   color: var(--ink);
 }
 
+.control-panel .btn + .btn {
+  margin-top: 12px;
+}
+
 .viewer-meta {
   display: grid;
   gap: 8px;
@@ -868,7 +899,6 @@ button {
 }
 
 .question-card {
-  position: relative;
   min-height: 440px;
   padding: 28px 32px;
 }
@@ -906,12 +936,14 @@ button {
 }
 
 .answer-button {
-  height: 46px;
+  min-height: 46px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  padding: 10px 14px;
   background: #ffffff;
   color: var(--ink);
   font-weight: 800;
+  text-align: left;
 }
 
 .answer-button.is-selected {
@@ -920,16 +952,33 @@ button {
   color: var(--brand);
 }
 
+.answer-button.is-disabled,
+.answer-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .next-button {
-  position: absolute;
-  right: 40px;
-  bottom: 30px;
+  display: flex;
+  width: min(220px, 100%);
+  margin: 24px 0 0 auto;
   min-width: 160px;
 }
 
 .score-side {
   min-height: 440px;
+  border-width: 2px;
   padding: 28px;
+}
+
+.score-side.is-correct {
+  border-color: var(--success);
+  background: #f4fbf7;
+}
+
+.score-side.is-wrong {
+  border-color: #c2410c;
+  background: #fff8f2;
 }
 
 .score-side h2 {
@@ -1346,10 +1395,6 @@ button {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 16px 20px;
-  }
-
-  .quiz-name strong {
-    text-align: left;
   }
 
   .question-card h2,
